@@ -178,7 +178,7 @@ private fun Kitchen(catalog: Catalog) {
             )
         },
         floatingActionButton = {
-            action?.let { ExtendedFloatingActionButton(text = { Text(it.title) }, icon = { Icon(it.icon, null) }, onClick = it.perform) }
+            action?.let { ExtendedFloatingActionButton(text = { Text(it.title) }, icon = { Icon(it.icon, it.title) }, onClick = it.perform) }
         },
     ) { insets ->
         Box(Modifier.fillMaxSize().padding(insets), contentAlignment = Alignment.TopCenter) {
