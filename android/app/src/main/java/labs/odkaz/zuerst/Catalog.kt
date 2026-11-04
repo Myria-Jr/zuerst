@@ -34,6 +34,21 @@ internal class Catalog(json: String) {
 
     fun name(id: String) = byId.getValue(id).name
 
+    fun ready(stock: Collection<String>): List<Recipe> = recipes.filter { recipe -> recipe.items.all { it.id in stock } }
+        .sortedBy(Recipe::minutes)
+
+    fun receipt(text: String): List<String> = text.take(20_000).lineSequence().mapNotNull { line ->
+        val words = normalize(line).replace(Regex("[^a-z0-9]+"), " ").trim()
+        if (words.isBlank() || receiptMetadata.containsMatchIn(words) || preparedProduct.containsMatchIn(words)) return@mapNotNull null
+        val padded = " $words "
+        indexed.filter { (ingredient, names) ->
+            ingredient.id !in setOf("rice", "water") && names.any { alias ->
+                val plain = alias.substringBefore(" (")
+                plain.length >= 3 && " $plain " in padded
+            }
+        }.keys.singleOrNull()?.id
+    }.distinct().toList()
+
     fun search(query: String): List<String> {
         val terms = normalize(query).split(spaces).filter(String::isNotEmpty)
         val value = terms.joinToString(" ")
@@ -63,6 +78,9 @@ internal class Catalog(json: String) {
         }
     }
 }
+
+private val receiptMetadata = Regex("^(?:[0-9]+ )*(?:summe|gesamt|zwischensumme|mwst|ust|rabatt|pfand|retoure|storno|ruckgeld|zahlung|betrag|karte|terminal)(?: |$)")
+private val preparedProduct = Regex("(?:^| )(?:chips|sauce|sosse|suppe|pulver|gewurz|gewurzt|mischung|geschmack|schoko|schokolade)(?: |$)")
 
 private fun <T> JSONArray.map(transform: JSONArray.(Int) -> T): List<T> = List(length()) { transform(it) }
 private fun JSONArray.strings(): List<String> = map { getString(it) }

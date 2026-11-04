@@ -4,9 +4,11 @@ private enum Stage: Hashable { case pick, confirm, result, cook }
 
 struct Kitchen: View {
     let catalog: Catalog
+    let onClose: () -> Void
+    let onCooked: (Recipe) -> Void
     @State private var path: [Stage] = []
-    @State private var picked: [String] = []
-    @State private var confirmed: Set<String> = []
+    @State private var picked: [String]
+    @State private var confirmed: Set<String>
     @State private var query = ""
     @State private var idea = 0
     @State private var showsInfo = false
@@ -14,6 +16,14 @@ struct Kitchen: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .body) private var chipWidth = 106.0
+
+    init(catalog: Catalog, preset: [String], stock: [String], onClose: @escaping () -> Void, onCooked: @escaping (Recipe) -> Void) {
+        self.catalog = catalog
+        self.onClose = onClose
+        self.onCooked = onCooked
+        _picked = State(initialValue: preset)
+        _confirmed = State(initialValue: Set(stock))
+    }
 
     private var matches: RecipeMatches { catalog.matches(picked: picked, confirmed: confirmed) }
     private var active: Candidate? {
@@ -67,6 +77,9 @@ struct Kitchen: View {
         .navigationTitle(stage == .pick ? "" : "Zuerst")
         .toolbar {
             if stage == .pick {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: onClose) { Label("Schließen", systemImage: "xmark").labelStyle(.iconOnly) }
+                }
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 8) {
                         Image("Mark").resizable().frame(width: 29, height: 29).accessibilityHidden(true)
@@ -220,7 +233,7 @@ struct Kitchen: View {
     }
 
     private func togglePick(_ id: String) {
-        if picked.contains(id) { picked.removeAll { $0 == id }; confirmed.remove(id) }
+        if picked.contains(id) { picked.removeAll { $0 == id } }
         else if picked.count < 3 { picked.append(id); query = ""; searchFocused = false }
         idea = 0
     }
@@ -246,7 +259,8 @@ struct Kitchen: View {
                 }
             }
             return DockAction(title: "Auswahl ändern", symbol: "arrow.right", perform: startAgain)
-        case .cook: return nil
+        case .cook:
+            return active.map { item in DockAction(title: "Gekocht eintragen", symbol: "checkmark") { onCooked(item.recipe) } }
         }
     }
 

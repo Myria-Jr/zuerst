@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val catalog = assets.open("catalog.json").bufferedReader().use { Catalog(it.readText()) }
-        setContent { ZuerstTheme { Kitchen(catalog) } }
+        setContent { ZuerstTheme { JournalScreen(catalog) } }
     }
 }
 
@@ -123,10 +123,10 @@ private data class Action(val title: String, val icon: ImageVector, val perform:
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Kitchen(catalog: Catalog) {
+internal fun Kitchen(catalog: Catalog, preset: List<String>, stock: List<String>, onClose: () -> Unit, onCooked: (Recipe) -> Unit) {
     var step by rememberSaveable { mutableIntStateOf(0) }
-    var picked by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
-    var confirmed by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
+    var picked by rememberSaveable { mutableStateOf(ArrayList(preset)) }
+    var confirmed by rememberSaveable { mutableStateOf(ArrayList(stock)) }
     var idea by rememberSaveable { mutableIntStateOf(0) }
     var query by rememberSaveable { mutableStateOf("") }
     var about by rememberSaveable { mutableStateOf(false) }
@@ -136,11 +136,10 @@ private fun Kitchen(catalog: Catalog) {
     val suggestion = matches.complete.takeIf { it.isNotEmpty() }?.let { it[idea % it.size] }
     val almost = matches.almost
     fun go(stage: Stage) { focus.clearFocus(); query = ""; step = stage.ordinal }
-    fun back() { if (step > 0) go(Stage.entries[step - 1]) }
+    fun back() { if (step > 0) go(Stage.entries[step - 1]) else onClose() }
     fun togglePick(id: String) {
         if (id in picked) {
             picked = ArrayList(picked - id)
-            confirmed = ArrayList(confirmed - id)
         } else if (picked.size < 3) {
             picked = ArrayList(picked + id)
             if (query.isNotBlank()) { query = ""; focus.clearFocus() }
@@ -151,7 +150,7 @@ private fun Kitchen(catalog: Catalog) {
         confirmed = ArrayList(if (id in confirmed) confirmed - id else confirmed + id)
         idea = 0
     }
-    BackHandler(enabled = step > 0) { back() }
+    BackHandler { back() }
     val action = when (stage) {
         Stage.Pick -> if (picked.isEmpty()) null else Action("Zutaten prüfen", Icons.AutoMirrored.Filled.ArrowForward) { go(Stage.Confirm) }
         Stage.Confirm -> Action("Gericht finden", Icons.AutoMirrored.Filled.ArrowForward) { go(Stage.Result) }
@@ -160,7 +159,7 @@ private fun Kitchen(catalog: Catalog) {
             almost != null -> Action("Zutat bestätigen", Icons.Default.Check) { toggleConfirm(almost.missing.single()) }
             else -> Action("Auswahl ändern", Icons.AutoMirrored.Filled.ArrowForward) { go(Stage.Pick) }
         }
-        Stage.Cook -> null
+        Stage.Cook -> suggestion?.let { current -> Action("Gekocht eintragen", Icons.Default.Check) { onCooked(current.recipe) } }
     }
 
     Scaffold(
@@ -173,7 +172,7 @@ private fun Kitchen(catalog: Catalog) {
                         Text("Zuerst.", fontWeight = FontWeight.Black)
                     }
                 },
-                navigationIcon = { if (step > 0) IconButton(::back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") } },
+                navigationIcon = { IconButton(::back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") } },
                 actions = { IconButton({ about = true }) { Icon(Icons.Default.Info, "Über Zuerst") } },
             )
         },

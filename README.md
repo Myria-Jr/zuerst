@@ -15,6 +15,8 @@ npm run dev
 
 ## Native Apps
 
+Das native Küchenjournal bündelt passende Gerichte, Vorrat und Kochverlauf. Du kannst einen Kassenbon fotografieren, ein vorhandenes Foto wählen oder Bontext einfügen. Die Erkennung läuft auf dem Gerät. Prüfe die Zutaten vor dem Übernehmen. Gespeichert werden bestätigte Zutaten und eingetragene Gerichte. Der Verlauf zeigt die letzten sieben Tage.
+
 - **Android:** `android/` in Android Studio öffnen (JDK 17, Android SDK 35). `gradlew.bat :app:testReleaseUnitTest :app:assembleRelease` auf Windows beziehungsweise `./gradlew :app:testReleaseUnitTest :app:assembleRelease` auf macOS/Linux. Jetpack Compose nutzt Material 3 mit der Systempalette auf Android 12+ und einer Zuerst-Palette als Fallback. Mindestversion: Android 8.
 - **iOS:** `ios/Zuerst.xcodeproj` in Xcode mit iOS-26-SDK öffnen und das Schema `Zuerst` im iPhone-Simulator starten. Der SwiftUI-Dock nutzt Apples Liquid Glass über einem bewegten Mesh; die Bedienung berücksichtigt reduzierte Bewegung und Transparenz. Für Gerätebuilds in Xcode ein Apple-Entwicklerteam wählen. Eine iOS-App wird über TestFlight/App Store oder mit passender Geräteprovisionierung verteilt; die APK ist ausschließlich für Android.
 

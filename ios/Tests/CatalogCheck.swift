@@ -15,6 +15,10 @@ struct CatalogCheck {
         let empty = catalog.matches(picked: ["cucumber", "paprika", "eggs"], confirmed: ["oil", "salt"])
         precondition(empty.complete.isEmpty && empty.almost == nil)
         precondition(catalog.search("MOHREN").first == "carrots")
+        let receipt = "BIO EIER 10 ST 2,49\nPAPRIKA ROT 1,19\nPAPRIKA CHIPS 1,99\nRABATT BROT 0,30\nBASMATI REIS 1,79\nEIER 2,49\nSUMME 9,55"
+        precondition(catalog.receipt(receipt) == ["eggs", "paprika"])
+        precondition(catalog.ready(stock: ["eggs", "paprika", "oil", "salt"]).first?.id == "paprika-eier")
+        precondition(catalog.ready(stock: ["eggs", "paprika"]).isEmpty)
         print("Zuerst: nativer Swift-Katalog geprüft")
     }
 }

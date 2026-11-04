@@ -47,6 +47,31 @@ struct Catalog: Decodable {
 
     func name(_ id: String) -> String { ingredients.first(where: { $0.id == id })?.name ?? id }
 
+    func ready(stock: [String]) -> [Recipe] {
+        let present = Set(stock)
+        return recipes.filter { recipe in recipe.items.allSatisfy { present.contains($0.id) } }.sorted { $0.minutes < $1.minutes }
+    }
+
+    func receipt(_ text: String) -> [String] {
+        let aliases = ingredients.filter { !["rice", "water"].contains($0.id) }.map { item in
+            let words = ([item.name] + item.aliases).map { Self.normalized($0.components(separatedBy: " (")[0]) }
+            return (item.id, words.filter { $0.count >= 3 })
+        }
+        let metadata = #"^(?:[0-9]+ )*(?:summe|gesamt|zwischensumme|mwst|ust|rabatt|pfand|retoure|storno|ruckgeld|zahlung|betrag|karte|terminal)(?: |$)"#
+        let prepared = #"(?:^| )(?:chips|sauce|sosse|suppe|pulver|gewurz|gewurzt|mischung|geschmack|schoko|schokolade)(?: |$)"#
+        var seen = Set<String>()
+        return text.prefix(20_000).split(whereSeparator: \.isNewline).compactMap { line in
+            let words = Self.normalized(String(line)).replacingOccurrences(of: "[^a-z0-9]+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespaces)
+            guard words.range(of: metadata, options: .regularExpression) == nil,
+                  words.range(of: prepared, options: .regularExpression) == nil else { return nil }
+            let padded = " \(words) "
+            let matches = aliases.filter { _, names in names.contains { padded.contains(" \($0) ") } }
+            guard matches.count == 1, let id = matches.first?.0, seen.insert(id).inserted else { return nil }
+            return id
+        }
+    }
+
     func search(_ query: String) -> [String] {
         let terms = Self.normalized(query).split(whereSeparator: \.isWhitespace).map(String.init)
         let value = terms.joined(separator: " ")

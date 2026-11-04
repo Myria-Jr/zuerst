@@ -12,11 +12,11 @@ struct ZuerstRoot: View {
 
     var body: some View {
         if let catalog {
-            Kitchen(catalog: catalog)
+            JournalHome(catalog: catalog)
         } else {
             ContentUnavailableView("Rezepte fehlen", systemImage: "book.closed", description: Text("Der lokale Rezeptkatalog konnte nicht geladen werden."))
         }
     }
 }
 
-#Preview("Zutatenauswahl") { ZuerstRoot() }
+#Preview("Heute") { ZuerstRoot() }
