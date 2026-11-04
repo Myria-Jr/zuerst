@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Zuerst</string>
+    <color name="icon_background">#33223A</color>
+    <style name="Theme.Zuerst" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">#F7F3E9</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

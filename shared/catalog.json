@@ -1,0 +1,1043 @@
+{
+  "ingredients": [
+    {
+      "id": "paprika",
+      "name": "Paprika",
+      "aliases": [
+        "Peperoni",
+        "Gemüsepaprika"
+      ]
+    },
+    {
+      "id": "eggs",
+      "name": "Eier",
+      "aliases": [
+        "Ei"
+      ]
+    },
+    {
+      "id": "tomatoes",
+      "name": "Tomaten",
+      "aliases": [
+        "Tomate",
+        "Cherrytomaten",
+        "Cocktailtomaten"
+      ]
+    },
+    {
+      "id": "zucchini",
+      "name": "Zucchini",
+      "aliases": [
+        "Zucchetti"
+      ]
+    },
+    {
+      "id": "carrots",
+      "name": "Karotten",
+      "aliases": [
+        "Möhren",
+        "Möhre",
+        "Karotte",
+        "Rüebli"
+      ]
+    },
+    {
+      "id": "potatoes",
+      "name": "Kartoffeln",
+      "aliases": [
+        "Kartoffel",
+        "Erdäpfel"
+      ]
+    },
+    {
+      "id": "bread",
+      "name": "Brot",
+      "aliases": [
+        "Toast",
+        "Baguette"
+      ]
+    },
+    {
+      "id": "pasta",
+      "name": "Nudeln",
+      "aliases": [
+        "Pasta",
+        "Spaghetti",
+        "Penne",
+        "Fusilli"
+      ]
+    },
+    {
+      "id": "rice",
+      "name": "Gekochter Reis",
+      "aliases": [
+        "Reis",
+        "Reisreste"
+      ]
+    },
+    {
+      "id": "spinach",
+      "name": "Babyspinat",
+      "aliases": [
+        "Spinat",
+        "Blattspinat"
+      ]
+    },
+    {
+      "id": "mushrooms",
+      "name": "Champignons",
+      "aliases": [
+        "Pilze",
+        "Champignon"
+      ]
+    },
+    {
+      "id": "cucumber",
+      "name": "Gurke",
+      "aliases": [
+        "Salatgurke"
+      ]
+    },
+    {
+      "id": "chickpeas",
+      "name": "Kichererbsen (Dose)",
+      "aliases": [
+        "Kichererbse"
+      ]
+    },
+    {
+      "id": "whitebeans",
+      "name": "Weiße Bohnen (Dose)",
+      "aliases": [
+        "Bohnen"
+      ]
+    },
+    {
+      "id": "lentils",
+      "name": "Linsen (Dose)",
+      "aliases": [
+        "Linse",
+        "Dosenlinsen"
+      ]
+    },
+    {
+      "id": "tuna",
+      "name": "Thunfisch (Dose)",
+      "aliases": [
+        "Thunfisch"
+      ]
+    },
+    {
+      "id": "peas",
+      "name": "TK-Erbsen",
+      "aliases": [
+        "Erbsen",
+        "Tiefkühlerbsen"
+      ]
+    },
+    {
+      "id": "onion",
+      "name": "Zwiebel",
+      "aliases": [
+        "Zwiebeln"
+      ]
+    },
+    {
+      "id": "garlic",
+      "name": "Knoblauch",
+      "aliases": [
+        "Knoblauchzehe"
+      ]
+    },
+    {
+      "id": "cheese",
+      "name": "Reibekäse",
+      "aliases": [
+        "Käse",
+        "Gouda",
+        "Emmentaler",
+        "Cheddar"
+      ]
+    },
+    {
+      "id": "feta",
+      "name": "Feta",
+      "aliases": [
+        "Schafskäse",
+        "Hirtenkäse"
+      ]
+    },
+    {
+      "id": "mozzarella",
+      "name": "Mozzarella",
+      "aliases": []
+    },
+    {
+      "id": "yoghurt",
+      "name": "Naturjoghurt",
+      "aliases": [
+        "Joghurt",
+        "Jogurt",
+        "Joghourt"
+      ]
+    },
+    {
+      "id": "milk",
+      "name": "Milch",
+      "aliases": []
+    },
+    {
+      "id": "flour",
+      "name": "Mehl",
+      "aliases": [
+        "Weizenmehl"
+      ]
+    },
+    {
+      "id": "oats",
+      "name": "Haferflocken",
+      "aliases": [
+        "Hafer"
+      ]
+    },
+    {
+      "id": "banana",
+      "name": "Banane",
+      "aliases": [
+        "Bananen"
+      ]
+    },
+    {
+      "id": "apple",
+      "name": "Apfel",
+      "aliases": [
+        "Äpfel"
+      ]
+    },
+    {
+      "id": "lemon",
+      "name": "Zitrone",
+      "aliases": [
+        "Zitronensaft"
+      ]
+    },
+    {
+      "id": "couscous",
+      "name": "Couscous",
+      "aliases": [
+        "Kuskus"
+      ]
+    },
+    {
+      "id": "tortilla",
+      "name": "Tortillas",
+      "aliases": [
+        "Wraps",
+        "Tortilla",
+        "Wrap"
+      ]
+    },
+    {
+      "id": "cannedtomatoes",
+      "name": "Gehackte Tomaten (Dose)",
+      "aliases": [
+        "Dosentomaten",
+        "Tomatenstücke"
+      ]
+    },
+    {
+      "id": "oil",
+      "name": "Öl",
+      "aliases": [
+        "Olivenöl",
+        "Rapsöl",
+        "Pflanzenöl",
+        "Bratöl",
+        "Oel"
+      ]
+    },
+    {
+      "id": "salt",
+      "name": "Salz",
+      "aliases": []
+    },
+    {
+      "id": "water",
+      "name": "Wasser",
+      "aliases": []
+    }
+  ],
+  "quick": [
+    "paprika",
+    "eggs",
+    "tomatoes",
+    "zucchini",
+    "potatoes",
+    "carrots",
+    "bread",
+    "pasta"
+  ],
+  "pantry": [
+    "oil",
+    "salt",
+    "water"
+  ],
+  "recipes": [
+    {
+      "id": "paprika-eier",
+      "name": "Paprika-Rührei",
+      "minutes": 10,
+      "note": "Saftige Paprikawürfel und cremiges Rührei aus einer Pfanne.",
+      "steps": [
+        "Paprika entkernen und klein würfeln. Eier mit Salz in einer Schüssel verquirlen.",
+        "Öl in einer Pfanne erhitzen. Paprika bei mittlerer Hitze etwa 5 Minuten braten.",
+        "Eier dazugießen. Mit einem Pfannenwender langsam zusammenschieben, bis die Eier vollständig gestockt sind."
+      ],
+      "items": [
+        {
+          "id": "paprika",
+          "amount": "1 große"
+        },
+        {
+          "id": "eggs",
+          "amount": "4"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "2 Prisen"
+        }
+      ]
+    },
+    {
+      "id": "paprika-quesadilla",
+      "name": "Paprika-Käse-Quesadillas",
+      "minutes": 15,
+      "note": "Knusprige Fladen mit geschmolzenem Käse und Paprika.",
+      "steps": [
+        "Paprika entkernen und fein würfeln. Zwei Tortillas mit Käse und Paprika belegen, die anderen beiden darauflegen.",
+        "Eine Pfanne dünn mit Öl ausstreichen. Quesadillas nacheinander bei mittlerer Hitze je Seite 2–3 Minuten braten.",
+        "Kurz ruhen lassen und in Viertel schneiden."
+      ],
+      "items": [
+        {
+          "id": "paprika",
+          "amount": "1"
+        },
+        {
+          "id": "tortilla",
+          "amount": "4 kleine"
+        },
+        {
+          "id": "cheese",
+          "amount": "120 g"
+        },
+        {
+          "id": "oil",
+          "amount": "1 TL"
+        }
+      ]
+    },
+    {
+      "id": "paprika-reis",
+      "name": "Paprika-Eier-Reis",
+      "minutes": 15,
+      "note": "Reis vom Vortag wird mit Paprika und Ei zur schnellen Pfanne.",
+      "steps": [
+        "Paprika entkernen und würfeln. Eier verquirlen und den gekochten, gekühlt gelagerten Reis mit einer Gabel auflockern.",
+        "Öl in einer großen Pfanne erhitzen. Paprika 4 Minuten anbraten, Reis dazugeben und unter Rühren erhitzen, bis er überall dampft.",
+        "Reis an den Rand schieben. Eier in der Mitte vollständig stocken lassen, dann alles mischen und salzen."
+      ],
+      "items": [
+        {
+          "id": "paprika",
+          "amount": "1"
+        },
+        {
+          "id": "eggs",
+          "amount": "2"
+        },
+        {
+          "id": "rice",
+          "amount": "350 g"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "¼ TL"
+        }
+      ]
+    },
+    {
+      "id": "tomaten-eier",
+      "name": "Tomaten-Eier-Pfanne",
+      "minutes": 12,
+      "note": "Süße Tomaten und locker gestockte Eier.",
+      "steps": [
+        "Tomaten in Spalten schneiden. Eier mit Salz verquirlen.",
+        "Öl in einer Pfanne erhitzen. Tomaten 4 Minuten braten, bis ein Teil ihres Safts verdampft ist.",
+        "Eier dazugeben und bei mittlerer Hitze langsam rühren, bis sie vollständig gestockt sind."
+      ],
+      "items": [
+        {
+          "id": "tomatoes",
+          "amount": "250 g"
+        },
+        {
+          "id": "eggs",
+          "amount": "4"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "¼ TL"
+        }
+      ]
+    },
+    {
+      "id": "shakshuka",
+      "name": "Schnelle Shakshuka",
+      "minutes": 18,
+      "note": "Eier in einer sämigen Tomatensauce mit Paprika.",
+      "steps": [
+        "Paprika entkernen, fein würfeln und in Öl 4 Minuten anbraten.",
+        "Gehackte Tomaten und Salz zugeben und 5 Minuten offen einkochen.",
+        "Vier Mulden in die Sauce drücken und je ein Ei hineinschlagen. Zugedeckt 6–8 Minuten garen, bis die Eier vollständig gestockt sind."
+      ],
+      "items": [
+        {
+          "id": "eggs",
+          "amount": "4"
+        },
+        {
+          "id": "paprika",
+          "amount": "1"
+        },
+        {
+          "id": "cannedtomatoes",
+          "amount": "1 Dose (400 g)"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "¼ TL"
+        }
+      ]
+    },
+    {
+      "id": "spinat-omelett",
+      "name": "Spinat-Feta-Omelett",
+      "minutes": 12,
+      "note": "Ein weiches Omelett mit würzigem Feta und Blattspinat.",
+      "steps": [
+        "Spinat waschen und trocken schütteln. Eier verquirlen und Feta zerbröseln.",
+        "Öl in einer Pfanne erhitzen und Spinat darin 2 Minuten zusammenfallen lassen.",
+        "Eier eingießen und mit Feta bestreuen. Bei kleiner Hitze zugedeckt vollständig stocken lassen, zusammenklappen und halbieren."
+      ],
+      "items": [
+        {
+          "id": "eggs",
+          "amount": "4"
+        },
+        {
+          "id": "spinach",
+          "amount": "100 g"
+        },
+        {
+          "id": "feta",
+          "amount": "80 g"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        }
+      ]
+    },
+    {
+      "id": "caprese",
+      "name": "Tomaten mit Mozzarella",
+      "minutes": 8,
+      "note": "Saftige Tomatenscheiben, milder Mozzarella und Olivenöl.",
+      "steps": [
+        "Tomaten in Scheiben schneiden. Mozzarella abtropfen lassen und in Scheiben schneiden.",
+        "Tomaten und Mozzarella abwechselnd auf zwei Tellern anrichten.",
+        "Mit Salz würzen und mit Öl beträufeln."
+      ],
+      "items": [
+        {
+          "id": "tomatoes",
+          "amount": "350 g"
+        },
+        {
+          "id": "mozzarella",
+          "amount": "2 Kugeln (250 g)"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "2 Prisen"
+        }
+      ]
+    },
+    {
+      "id": "tomatenbrot",
+      "name": "Knuspriges Tomatenbrot",
+      "minutes": 10,
+      "note": "Geröstetes Brot mit frischer Tomate und Knoblauch.",
+      "steps": [
+        "Brot im Toaster oder in einer trockenen Pfanne knusprig rösten.",
+        "Tomaten fein würfeln und mit Öl und Salz mischen.",
+        "Knoblauch halbieren und die warmen Brotscheiben mit der Schnittfläche abreiben. Tomaten darauf verteilen."
+      ],
+      "items": [
+        {
+          "id": "bread",
+          "amount": "4 Scheiben"
+        },
+        {
+          "id": "tomatoes",
+          "amount": "250 g"
+        },
+        {
+          "id": "garlic",
+          "amount": "1 Zehe"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "2 Prisen"
+        }
+      ]
+    },
+    {
+      "id": "zucchini-pasta",
+      "name": "Zucchini-Zitronen-Pasta",
+      "minutes": 18,
+      "note": "Gebratene Zucchini und ein Spritzer Zitrone machen die Pasta frisch.",
+      "steps": [
+        "Wasser mit Salz aufkochen und Nudeln nach Packungsangabe garen. Eine kleine Tasse Kochwasser auffangen.",
+        "Zucchini in dünne Halbmonde schneiden und in Öl 6–8 Minuten goldbraun braten.",
+        "Nudeln, 3 EL Kochwasser und den Saft der halben Zitrone zur Zucchini geben und alles durchschwenken."
+      ],
+      "items": [
+        {
+          "id": "zucchini",
+          "amount": "1 große"
+        },
+        {
+          "id": "pasta",
+          "amount": "200 g"
+        },
+        {
+          "id": "lemon",
+          "amount": "½"
+        },
+        {
+          "id": "oil",
+          "amount": "2 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "2 TL"
+        },
+        {
+          "id": "water",
+          "amount": "1,5 l"
+        }
+      ]
+    },
+    {
+      "id": "zucchini-feta",
+      "name": "Zucchini-Feta-Pfanne",
+      "minutes": 13,
+      "note": "Gebratene Zucchinischeiben mit würzigen Fetabröseln.",
+      "steps": [
+        "Zucchini längs halbieren und in Scheiben schneiden. Knoblauch fein hacken.",
+        "Zucchini in Öl bei hoher Hitze 7–8 Minuten goldbraun braten. Knoblauch in der letzten Minute dazugeben.",
+        "Pfanne vom Herd ziehen, Feta darüberbröseln und kurz unterheben."
+      ],
+      "items": [
+        {
+          "id": "zucchini",
+          "amount": "2 kleine"
+        },
+        {
+          "id": "feta",
+          "amount": "150 g"
+        },
+        {
+          "id": "garlic",
+          "amount": "1 Zehe"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        }
+      ]
+    },
+    {
+      "id": "zucchini-puffer",
+      "name": "Zucchinipuffer",
+      "minutes": 20,
+      "note": "Kleine goldbraune Puffer mit saftiger Mitte.",
+      "steps": [
+        "Zucchini grob raspeln, mit Salz mischen und nach 3 Minuten in einem sauberen Tuch ausdrücken.",
+        "Raspel mit Eiern und Mehl vermischen. Öl in einer großen Pfanne erhitzen.",
+        "Die Masse portionsweise als flache Puffer ausbacken, je Seite etwa 3 Minuten. Bei Bedarf in zwei Durchgängen braten."
+      ],
+      "items": [
+        {
+          "id": "zucchini",
+          "amount": "300 g"
+        },
+        {
+          "id": "eggs",
+          "amount": "2"
+        },
+        {
+          "id": "flour",
+          "amount": "60 g"
+        },
+        {
+          "id": "oil",
+          "amount": "2 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "½ TL"
+        }
+      ]
+    },
+    {
+      "id": "kartoffel-eier",
+      "name": "Kartoffel-Eier-Pfanne",
+      "minutes": 20,
+      "note": "Goldbraune Kartoffelwürfel mit gebratenem Ei.",
+      "steps": [
+        "Kartoffeln gründlich waschen und in höchstens 1 cm große Würfel schneiden.",
+        "In Öl bei mittlerer Hitze zugedeckt 8 Minuten braten. Deckel abnehmen, salzen und unter Wenden 5–6 Minuten goldbraun braten.",
+        "Eier verquirlen, über die Kartoffeln geben und unter Wenden vollständig stocken lassen."
+      ],
+      "items": [
+        {
+          "id": "potatoes",
+          "amount": "400 g"
+        },
+        {
+          "id": "eggs",
+          "amount": "3"
+        },
+        {
+          "id": "oil",
+          "amount": "2 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "½ TL"
+        }
+      ]
+    },
+    {
+      "id": "kartoffel-roesti",
+      "name": "Schnelle Kartoffelrösti",
+      "minutes": 17,
+      "note": "Dünne, goldbraune Rösti mit knusprigen Rändern.",
+      "steps": [
+        "Kartoffeln schälen, grob reiben und in einem sauberen Tuch gründlich ausdrücken. Mit Salz mischen.",
+        "Öl in einer großen Pfanne erhitzen. Vier flache Rösti aus der Masse formen und in die Pfanne drücken.",
+        "Bei mittlerer Hitze je Seite 5–6 Minuten braten, bis sie außen goldbraun und innen weich sind."
+      ],
+      "items": [
+        {
+          "id": "potatoes",
+          "amount": "450 g"
+        },
+        {
+          "id": "oil",
+          "amount": "2 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "½ TL"
+        }
+      ]
+    },
+    {
+      "id": "karotten-rohkost",
+      "name": "Karotten-Apfel-Salat",
+      "minutes": 10,
+      "note": "Saftige Rohkost mit Apfel und frischer Zitrone.",
+      "steps": [
+        "Karotten schälen und grob raspeln. Apfel entkernen und dazuraspeln.",
+        "Zitrone auspressen. Saft mit Öl und Salz verrühren.",
+        "Das Dressing unterheben und den Salat kurz durchziehen lassen."
+      ],
+      "items": [
+        {
+          "id": "carrots",
+          "amount": "300 g"
+        },
+        {
+          "id": "apple",
+          "amount": "1"
+        },
+        {
+          "id": "lemon",
+          "amount": "½"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "1 Prise"
+        }
+      ]
+    },
+    {
+      "id": "karotten-couscous",
+      "name": "Karotten-Couscous mit Joghurt",
+      "minutes": 16,
+      "note": "Warmer Couscous mit gebratenen Karotten und kühlem Joghurt.",
+      "steps": [
+        "Wasser aufkochen. Couscous mit der Hälfte des Salzes übergießen und zugedeckt 5 Minuten quellen lassen.",
+        "Karotten schälen, in dünne Scheiben schneiden und in Öl 7–8 Minuten braten. Mit dem übrigen Salz würzen.",
+        "Couscous mit einer Gabel auflockern, Karotten untermischen und Joghurt daraufgeben."
+      ],
+      "items": [
+        {
+          "id": "carrots",
+          "amount": "250 g"
+        },
+        {
+          "id": "couscous",
+          "amount": "150 g"
+        },
+        {
+          "id": "yoghurt",
+          "amount": "150 g"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "½ TL"
+        },
+        {
+          "id": "water",
+          "amount": "180 ml"
+        }
+      ]
+    },
+    {
+      "id": "kaesetoast",
+      "name": "Knuspriger Käsetoast",
+      "minutes": 10,
+      "note": "Außen kross, innen geschmolzener Käse.",
+      "steps": [
+        "Käse auf zwei Brotscheiben verteilen und mit den übrigen Scheiben abdecken.",
+        "Die Außenseiten dünn mit Öl bestreichen. Sandwiches in eine Pfanne bei mittlerer Hitze legen.",
+        "Je Seite 3–4 Minuten rösten, bis das Brot knusprig ist und der Käse geschmolzen ist."
+      ],
+      "items": [
+        {
+          "id": "bread",
+          "amount": "4 Scheiben"
+        },
+        {
+          "id": "cheese",
+          "amount": "100 g"
+        },
+        {
+          "id": "oil",
+          "amount": "2 TL"
+        }
+      ]
+    },
+    {
+      "id": "arme-ritter",
+      "name": "Arme Ritter mit Banane",
+      "minutes": 14,
+      "note": "Goldbraune Brotscheiben mit reifer Banane.",
+      "steps": [
+        "Eier und Milch auf einem tiefen Teller verquirlen. Brotscheiben kurz von beiden Seiten eintauchen.",
+        "Öl in einer großen Pfanne erhitzen und das Brot je Seite etwa 3 Minuten goldbraun braten, bis die Eimasse vollständig gestockt ist.",
+        "Banane in Scheiben schneiden und auf dem warmen Brot verteilen."
+      ],
+      "items": [
+        {
+          "id": "bread",
+          "amount": "4 Scheiben"
+        },
+        {
+          "id": "eggs",
+          "amount": "2"
+        },
+        {
+          "id": "milk",
+          "amount": "100 ml"
+        },
+        {
+          "id": "banana",
+          "amount": "1 reife"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        }
+      ]
+    },
+    {
+      "id": "tomatenpasta",
+      "name": "Pasta mit Tomaten und Knoblauch",
+      "minutes": 18,
+      "note": "Eine schnelle Sauce aus frischen Tomaten und Knoblauch.",
+      "steps": [
+        "Wasser mit fast dem ganzen Salz aufkochen und Nudeln nach Packungsangabe garen.",
+        "Tomaten würfeln und Knoblauch fein hacken. Knoblauch 30 Sekunden in Öl anschwitzen, dann die Tomaten zugeben.",
+        "Tomaten 7 Minuten köcheln lassen, mit dem restlichen Salz würzen und die abgetropften Nudeln unterheben."
+      ],
+      "items": [
+        {
+          "id": "pasta",
+          "amount": "200 g"
+        },
+        {
+          "id": "tomatoes",
+          "amount": "350 g"
+        },
+        {
+          "id": "garlic",
+          "amount": "2 Zehen"
+        },
+        {
+          "id": "oil",
+          "amount": "2 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "2 TL"
+        },
+        {
+          "id": "water",
+          "amount": "1,5 l"
+        }
+      ]
+    },
+    {
+      "id": "bohnenpfanne",
+      "name": "Weiße Bohnen in Tomatensauce",
+      "minutes": 14,
+      "note": "Cremige Bohnen in einer schnell eingekochten Tomatensauce.",
+      "steps": [
+        "Zwiebel fein würfeln und 3 Minuten in Öl anschwitzen. Bohnen abgießen und abspülen.",
+        "Tomaten und Salz in die Pfanne geben und 5 Minuten offen köcheln lassen.",
+        "Bohnen unterrühren und weitere 4 Minuten erhitzen."
+      ],
+      "items": [
+        {
+          "id": "whitebeans",
+          "amount": "1 Dose (240 g Abtropfgewicht)"
+        },
+        {
+          "id": "cannedtomatoes",
+          "amount": "1 Dose (400 g)"
+        },
+        {
+          "id": "onion",
+          "amount": "1 kleine"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "¼ TL"
+        }
+      ]
+    },
+    {
+      "id": "kichererbsensalat",
+      "name": "Kichererbsen-Gurken-Salat",
+      "minutes": 10,
+      "note": "Knackige Gurke, Kichererbsen und ein Zitronendressing.",
+      "steps": [
+        "Kichererbsen abgießen und abspülen. Gurke würfeln.",
+        "Zitrone auspressen. Saft mit Öl und Salz verrühren.",
+        "Kichererbsen und Gurke mit dem Dressing mischen."
+      ],
+      "items": [
+        {
+          "id": "chickpeas",
+          "amount": "1 Dose (240 g Abtropfgewicht)"
+        },
+        {
+          "id": "cucumber",
+          "amount": "1"
+        },
+        {
+          "id": "lemon",
+          "amount": "½"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "¼ TL"
+        }
+      ]
+    },
+    {
+      "id": "linsen-thunfisch",
+      "name": "Linsensalat mit Thunfisch",
+      "minutes": 10,
+      "note": "Ein herzhafter Salat mit Tomate und Zitrone.",
+      "steps": [
+        "Linsen abgießen und abspülen. Thunfisch abtropfen lassen und mit einer Gabel zerteilen.",
+        "Tomaten würfeln. Zitrone auspressen und den Saft mit Öl und Salz verrühren.",
+        "Alles vorsichtig mischen und auf zwei Teller verteilen."
+      ],
+      "items": [
+        {
+          "id": "lentils",
+          "amount": "1 Dose (240 g Abtropfgewicht)"
+        },
+        {
+          "id": "tuna",
+          "amount": "1 Dose (130 g Abtropfgewicht)"
+        },
+        {
+          "id": "tomatoes",
+          "amount": "200 g"
+        },
+        {
+          "id": "lemon",
+          "amount": "½"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "2 Prisen"
+        }
+      ]
+    },
+    {
+      "id": "pilz-reis",
+      "name": "Pilzreis mit Erbsen",
+      "minutes": 15,
+      "note": "Braun gebratene Champignons, Erbsen und Reis aus der Pfanne.",
+      "steps": [
+        "Champignons putzen und in Scheiben schneiden. In einer großen Pfanne in Öl 6 Minuten kräftig braten.",
+        "Erbsen und den gekochten, gekühlt gelagerten Reis zugeben.",
+        "Unter häufigem Rühren mindestens 5 Minuten braten, bis alles überall dampfend heiß ist. Mit Salz abschmecken."
+      ],
+      "items": [
+        {
+          "id": "mushrooms",
+          "amount": "250 g"
+        },
+        {
+          "id": "peas",
+          "amount": "120 g"
+        },
+        {
+          "id": "rice",
+          "amount": "350 g"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        },
+        {
+          "id": "salt",
+          "amount": "½ TL"
+        }
+      ]
+    },
+    {
+      "id": "bananen-pancakes",
+      "name": "Bananen-Hafer-Pancakes",
+      "minutes": 16,
+      "note": "Kleine, weiche Pancakes mit reifer Banane.",
+      "steps": [
+        "Bananen mit einer Gabel zerdrücken. Eier und Haferflocken unterrühren und den Teig 3 Minuten quellen lassen.",
+        "Öl in einer Pfanne auf mittlerer Stufe erhitzen. Je Pancake einen gehäuften Esslöffel Teig hineingeben und etwas flach drücken.",
+        "In zwei Durchgängen je Seite 2–3 Minuten backen, bis die Pancakes goldbraun und innen fest sind."
+      ],
+      "items": [
+        {
+          "id": "banana",
+          "amount": "2 reife"
+        },
+        {
+          "id": "eggs",
+          "amount": "2"
+        },
+        {
+          "id": "oats",
+          "amount": "80 g"
+        },
+        {
+          "id": "oil",
+          "amount": "1 EL"
+        }
+      ]
+    },
+    {
+      "id": "apfel-porridge",
+      "name": "Warmes Apfelporridge",
+      "minutes": 10,
+      "note": "Cremige Haferflocken mit fein geriebenem Apfel.",
+      "steps": [
+        "Apfel entkernen und grob raspeln.",
+        "Milch, Haferflocken und Salz unter Rühren aufkochen.",
+        "Apfel dazugeben und etwa 5 Minuten sanft köcheln lassen. Zwischendurch umrühren."
+      ],
+      "items": [
+        {
+          "id": "apple",
+          "amount": "1 großer"
+        },
+        {
+          "id": "oats",
+          "amount": "100 g"
+        },
+        {
+          "id": "milk",
+          "amount": "400 ml"
+        },
+        {
+          "id": "salt",
+          "amount": "1 Prise"
+        }
+      ]
+    }
+  ]
+}

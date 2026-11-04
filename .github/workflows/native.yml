@@ -1,0 +1,39 @@
+name: Zuerst native
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Test and build Android
+        shell: bash
+        run: |
+          export JAVA_HOME="${JAVA_HOME_17_X64:?}"
+          sdkmanager 'platforms;android-35' 'build-tools;34.0.0'
+          cd android
+          bash gradlew --no-daemon :app:testReleaseUnitTest :app:assembleRelease
+  ios:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Test Swift catalog
+        shell: bash
+        run: |
+          swiftc ios/Zuerst/Catalog.swift ios/Tests/CatalogCheck.swift -o "$RUNNER_TEMP/catalog-check"
+          "$RUNNER_TEMP/catalog-check" shared/catalog.json
+      - name: Build iOS simulator app
+        run: >-
+          xcodebuild -project ios/Zuerst.xcodeproj -scheme Zuerst
+          -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build

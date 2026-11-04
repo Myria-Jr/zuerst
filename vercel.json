@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "out",
+  "headers": [
+    {
+      "source": "/downloads/zuerst-android.apk",
+      "headers": [
+        {"key": "Content-Type", "value": "application/vnd.android.package-archive"},
+        {"key": "Content-Disposition", "value": "attachment; filename=\"zuerst-android.apk\""},
+        {"key": "Cache-Control", "value": "public, max-age=300"}
+      ]
+    }
+  ]
+}
