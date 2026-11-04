@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -19,7 +19,8 @@ jobs:
         shell: bash
         run: |
           export JAVA_HOME="${JAVA_HOME_17_X64:?}"
-          sdkmanager 'platforms;android-35' 'build-tools;34.0.0'
+          test -f "${ANDROID_HOME:?}/platforms/android-35/android.jar"
+          test -x "$ANDROID_HOME/build-tools/34.0.0/aapt2"
           cd android
           bash gradlew --no-daemon :app:testReleaseUnitTest :app:assembleRelease
   ios:
