@@ -183,7 +183,7 @@ struct JournalHome: View {
         let ready = catalog.ready(stock: stock)
         return VStack(alignment: .leading, spacing: 13) {
             Text(Date.now.formatted(.dateTime.locale(Locale(identifier: "de_DE")).weekday(.wide).day().month(.wide)))
-                .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+                .font(.subheadline.weight(.medium)).foregroundStyle(Color.primary.opacity(0.7))
             if !journal.name.isEmpty { Text("Hallo, \(journal.name)").font(.title2.bold()) }
             JournalPanel(tint: .mint) {
                 ViewThatFits(in: .horizontal) {
@@ -205,18 +205,18 @@ struct JournalHome: View {
             if !soon.isEmpty { JournalPanel(tint: .orange) {
                 Text("Zuerst aufbrauchen").font(.headline)
                 ForEach(soon, id: \.self) { id in Text("\(catalog.name(id)) · \(journal.expiry[id] ?? "")") }
-                Text("Nach deinen eingetragenen Daten. Prüfe Lebensmittel vor dem Verwenden.").font(.footnote).foregroundStyle(.secondary)
+                Text("Nach deinen eingetragenen Daten. Prüfe Lebensmittel vor dem Verwenden.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
             } }
             JournalPanel {
                 Label("Heute auf dem Plan", systemImage: "calendar").font(.headline)
                 let planned = catalog.recipes.first { recipe in journal.plans.contains { $0.day == JournalDates.key(.now) && $0.recipeId == recipe.id } }
                 if let planned { Button(planned.name) { detail = planned }.buttonStyle(.plain) }
-                else { Text("Ein kleiner Plan macht den nächsten Einkauf leichter.").foregroundStyle(.secondary) }
+                else { Text("Ein kleiner Plan macht den nächsten Einkauf leichter.").foregroundStyle(Color.primary.opacity(0.7)) }
                 Button("Plan ansehen") { tab = .plan }.buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
             }
             JournalPanel(tint: .indigo) {
                 Label("Vom Einkauf in den Vorrat", systemImage: "receipt").font(.headline)
-                Text("Fotografiere einen Kassenbon und prüfe die erkannten Zutaten.").foregroundStyle(.secondary)
+                Text("Fotografiere einen Kassenbon und prüfe die erkannten Zutaten.").foregroundStyle(Color.primary.opacity(0.7))
                 Button("Bon erfassen") { receipt = true }
                     .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
             }
@@ -236,7 +236,7 @@ struct JournalHome: View {
             JournalPanel(tint: tint) {
                 Label(title, systemImage: icon).font(.subheadline.weight(.semibold))
                 Text("\(value)").font(.largeTitle.bold()).monospacedDigit()
-                Text(detail).font(.footnote).foregroundStyle(.secondary)
+                Text(detail).font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
             }
         }.buttonStyle(.plain).accessibilityElement(children: .combine)
     }
@@ -245,14 +245,14 @@ struct JournalHome: View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Aus Vorrat kochen").font(.title2.bold()).accessibilityAddTraits(.isHeader)
             Text(recipe.map { "\($0.name) · \($0.minutes) Min." } ?? "Wähle eine Zutat und finde ein Gericht für heute.")
-                .font(.subheadline).foregroundStyle(.secondary)
+                .font(.subheadline).foregroundStyle(Color.primary.opacity(0.7))
         }.frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func readyCount(_ count: Int) -> some View {
         VStack(spacing: 1) {
             Text("\(count)").font(.title.bold()).monospacedDigit()
-            Text("passend").font(.caption).foregroundStyle(.secondary)
+            Text("passend").font(.caption).foregroundStyle(Color.primary.opacity(0.7))
         }
         .padding(12).background(Color.mint.opacity(0.13), in: .capsule)
         .accessibilityElement(children: .ignore).accessibilityLabel("\(count) passende Rezepte")
@@ -260,7 +260,7 @@ struct JournalHome: View {
 
     private var pantry: some View {
         VStack(alignment: .leading, spacing: 13) {
-            Text("Hier steht, was du zu Hause hast.").foregroundStyle(.secondary)
+            Text("Hier steht, was du zu Hause hast.").foregroundStyle(Color.primary.opacity(0.7))
             Button { receipt = true } label: { Label("Bon erfassen", systemImage: "document.viewfinder").frame(maxWidth: .infinity, minHeight: 44) }
                 .buttonStyle(.borderedProminent).buttonBorderShape(.capsule)
             JournalPanel {
@@ -269,7 +269,7 @@ struct JournalHome: View {
             }
             JournalPanel {
                 Text("Im Vorrat · \(stock.count)").font(.headline)
-                if stock.isEmpty { Text("Füge Zutaten einzeln oder über einen Bon hinzu.").foregroundStyle(.secondary) }
+                if stock.isEmpty { Text("Füge Zutaten einzeln oder über einen Bon hinzu.").foregroundStyle(Color.primary.opacity(0.7)) }
                 ForEach(stock.sorted { catalog.name($0).localizedCompare(catalog.name($1)) == .orderedAscending }, id: \.self) { id in
                     Divider()
                     HStack {
@@ -280,7 +280,7 @@ struct JournalHome: View {
                         Button { update { $0.stock.removeAll { $0 == id } } } label: {
                             Label("\(catalog.name(id)) aus Vorrat entfernen", systemImage: "xmark.circle").labelStyle(.iconOnly)
                                 .frame(minWidth: 44, minHeight: 44)
-                        }.buttonStyle(.plain).foregroundStyle(.secondary)
+                        }.buttonStyle(.plain).foregroundStyle(Color.primary.opacity(0.7))
                     }
                 }
             }
@@ -299,7 +299,7 @@ struct JournalHome: View {
                 Text("Gerichte · letzte 7 Tage").font(.headline)
                 Text("\(total)").font(.largeTitle.bold()).monospacedDigit()
                 if total == 0 {
-                    Text("Nach dem Kochen kannst du dein Gericht hier eintragen.").foregroundStyle(.secondary)
+                    Text("Nach dem Kochen kannst du dein Gericht hier eintragen.").foregroundStyle(Color.primary.opacity(0.7))
                 } else {
                     Chart(days) { day in
                         BarMark(x: .value("Tag", day.date, unit: .day), y: .value("Gerichte", day.count))
@@ -311,7 +311,7 @@ struct JournalHome: View {
             if total > 0 { JournalPanel(tint: .teal) {
                 Text("Zutatenvielfalt · letzte 7 Tage").font(.headline)
                 Text("\(variety)").font(.largeTitle.bold()).monospacedDigit()
-                Text("Verschiedene Zutaten in deinen eingetragenen Rezepten, ohne Grundzutaten.").foregroundStyle(.secondary)
+                Text("Verschiedene Zutaten in deinen eingetragenen Rezepten, ohne Grundzutaten.").foregroundStyle(Color.primary.opacity(0.7))
             } }
             if !state.meals.isEmpty { JournalPanel {
                 Text("Deine Gerichte").font(.headline)
@@ -321,13 +321,13 @@ struct JournalHome: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(meal.name).font(.subheadline.weight(.semibold))
                             Text(meal.date.formatted(.dateTime.locale(Locale(identifier: "de_DE")).weekday(.wide).day().month(.wide)))
-                                .font(.footnote).foregroundStyle(.secondary)
+                                .font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
                         }
                         Spacer()
                         Button { removal = meal } label: {
                             Label("\(meal.name) aus Verlauf entfernen", systemImage: "trash").labelStyle(.iconOnly)
                                 .frame(minWidth: 44, minHeight: 44)
-                        }.buttonStyle(.plain).foregroundStyle(.secondary)
+                        }.buttonStyle(.plain).foregroundStyle(Color.primary.opacity(0.7))
                     }
                 }
             } }
@@ -369,7 +369,7 @@ struct IngredientLookup: View {
         TextField("Zutat suchen", text: $query).textFieldStyle(.roundedBorder).frame(minHeight: 44)
         if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let ids = catalog.search(query).filter { !excluded.contains($0) }.prefix(8)
-            if ids.isEmpty { Text("Keine weitere passende Zutat gefunden.").font(.footnote).foregroundStyle(.secondary) }
+            if ids.isEmpty { Text("Keine weitere passende Zutat gefunden.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7)) }
             ForEach(Array(ids), id: \.self) { id in
                 Button { add(id); query = "" } label: { Label(catalog.name(id), systemImage: "plus").frame(minHeight: 44) }
                     .buttonStyle(.plain)

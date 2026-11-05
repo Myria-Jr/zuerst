@@ -24,7 +24,7 @@ struct RecipeLibrary: View {
         }
     }
     var body: some View {
-        Text("24 Ideen. Zwei Portionen. Höchstens 20 Minuten.").foregroundStyle(.secondary)
+        Text("24 Ideen. Zwei Portionen. Höchstens 20 Minuten.").foregroundStyle(Color.primary.opacity(0.7))
         TextField("Gericht oder Zutat suchen", text: $query).textFieldStyle(.roundedBorder).frame(minHeight: 44)
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) { ForEach(filters.indices, id: \.self) { index in
@@ -35,7 +35,7 @@ struct RecipeLibrary: View {
         JournalPanel {
             Text("\(matches.count) Rezepte").font(.headline)
             ForEach(matches) { recipe in JournalRecipeRow(recipe: recipe, journal: journal, open: { open(recipe) }, favorite: { update { $0.favorite(recipe.id) } }) }
-            if matches.isEmpty { Text(filter == 1 ? "Tippe bei einem Rezept auf das Herz, um es hier zu merken." : "Kein passendes Rezept. Ändere die Suche oder den Filter.").foregroundStyle(.secondary) }
+            if matches.isEmpty { Text(filter == 1 ? "Tippe bei einem Rezept auf das Herz, um es hier zu merken." : "Kein passendes Rezept. Ändere die Suche oder den Filter.").foregroundStyle(Color.primary.opacity(0.7)) }
         }
     }
 }
@@ -52,7 +52,7 @@ struct JournalRecipeRow: View {
                 HStack(spacing: 10) {
                     VStack(alignment: .leading, spacing: 5) {
                         Text(recipe.name).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
-                        Text("\(recipe.minutes) Min. · \(missing == 0 ? "Alles im Vorrat" : "\(missing) Zutaten fehlen")").font(.footnote).foregroundStyle(.secondary)
+                        Text("\(recipe.minutes) Min. · \(missing == 0 ? "Alles im Vorrat" : "\(missing) Zutaten fehlen")").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
                     }.frame(maxWidth: .infinity, alignment: .leading)
                     Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
                 }.frame(minHeight: 58)
@@ -80,7 +80,7 @@ struct WeeklyPlanner: View {
     }
     private var shoppingList: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Abhaken. Einkaufen. In den Vorrat übernehmen.").foregroundStyle(.secondary)
+            Text("Abhaken. Einkaufen. In den Vorrat übernehmen.").foregroundStyle(Color.primary.opacity(0.7))
             JournalPanel {
                 Text("Auf der Liste").font(.headline)
                 IngredientLookup(catalog: catalog, excluded: journal.shopping) { id in update { $0.shopping.append(id) } }
@@ -89,10 +89,10 @@ struct WeeklyPlanner: View {
                         Button { if checked.contains(id) { checked.remove(id) } else { checked.insert(id) } } label: {
                             HStack(spacing: 12) { Image(systemName: checked.contains(id) ? "checkmark.circle.fill" : "circle"); Text(catalog.name(id)).foregroundStyle(.primary); Spacer() }.frame(minHeight: 48)
                         }.buttonStyle(.plain).accessibilityAddTraits(checked.contains(id) ? .isSelected : [])
-                        Button { update { $0.shopping.removeAll { $0 == id } }; checked.remove(id) } label: { Label("\(catalog.name(id)) von Einkaufsliste entfernen", systemImage: "xmark").labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44) }.buttonStyle(.plain).foregroundStyle(.secondary)
+                        Button { update { $0.shopping.removeAll { $0 == id } }; checked.remove(id) } label: { Label("\(catalog.name(id)) von Einkaufsliste entfernen", systemImage: "xmark").labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44) }.buttonStyle(.plain).foregroundStyle(Color.primary.opacity(0.7))
                     }; Divider()
                 }
-                if journal.shopping.isEmpty { Text("Deine Liste ist frei. Füge Zutaten hinzu oder übernimm fehlende Zutaten aus einem Rezept.").foregroundStyle(.secondary) }
+                if journal.shopping.isEmpty { Text("Deine Liste ist frei. Füge Zutaten hinzu oder übernimm fehlende Zutaten aus einem Rezept.").foregroundStyle(Color.primary.opacity(0.7)) }
             }
             if !checked.isEmpty {
                 Button { update { $0.bought(Array(checked)) }; checked = [] } label: { Text("Gekauftes übernehmen · \(checked.count)").frame(maxWidth: .infinity, minHeight: 44) }.buttonStyle(.borderedProminent).buttonBorderShape(.capsule)
@@ -101,7 +101,7 @@ struct WeeklyPlanner: View {
     }
     private var weeklyPlan: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Deine nächsten sieben Tage, ganz entspannt.").foregroundStyle(.secondary)
+            Text("Deine nächsten sieben Tage, ganz entspannt.").foregroundStyle(Color.primary.opacity(0.7))
             ForEach(days, id: \.self) { day in
                 let key = JournalDates.key(day)
                 let recipe = catalog.recipes.first { recipe in journal.plans.contains { $0.day == key && $0.recipeId == recipe.id } }
@@ -109,7 +109,7 @@ struct WeeklyPlanner: View {
                     HStack {
                         Text(Calendar.current.isDateInToday(day) ? "Heute" : day.formatted(.dateTime.locale(Locale(identifier: "de_DE")).weekday(.abbreviated).day().month(.abbreviated))).font(.headline)
                         Spacer()
-                        if recipe != nil { Button { update { $0.plans.removeAll { $0.day == key } } } label: { Label("Plan für \(key) entfernen", systemImage: "xmark").labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44) }.buttonStyle(.plain).foregroundStyle(.secondary) }
+                        if recipe != nil { Button { update { $0.plans.removeAll { $0.day == key } } } label: { Label("Plan für \(key) entfernen", systemImage: "xmark").labelStyle(.iconOnly).frame(minWidth: 44, minHeight: 44) }.buttonStyle(.plain).foregroundStyle(Color.primary.opacity(0.7)) }
                     }
                     if let recipe {
                         JournalRecipeRow(recipe: recipe, journal: journal, open: { open(recipe) }, favorite: { update { $0.favorite(recipe.id) } })
@@ -122,7 +122,7 @@ struct WeeklyPlanner: View {
                 update { state in for plan in state.plans where keys.contains(plan.day) { if let recipe = catalog.recipes.first(where: { $0.id == plan.recipeId }) { state.buyMissing(recipe) } } }
                 shopping = true
             } label: { Text("Wocheneinkauf erstellen").frame(maxWidth: .infinity, minHeight: 44) }.buttonStyle(.borderedProminent).buttonBorderShape(.capsule).disabled(!journal.plans.contains { plan in days.contains { JournalDates.key($0) == plan.day } })
-            Text("Die Liste bündelt Zutaten. Die benötigten Mengen findest du in den Rezepten.").font(.footnote).foregroundStyle(.secondary)
+            Text("Die Liste bündelt Zutaten. Die benötigten Mengen findest du in den Rezepten.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
         }
     }
 }
@@ -163,11 +163,11 @@ struct RecipePage: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 17) {
                     Text(recipe.name).font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
-                    Text("\(recipe.minutes) Min. · 2 Portionen").foregroundStyle(.secondary)
+                    Text("\(recipe.minutes) Min. · 2 Portionen").foregroundStyle(Color.primary.opacity(0.7))
                     Text(recipe.note)
                     JournalPanel {
                         Text("Das brauchst du").font(.title2.bold())
-                        ForEach(recipe.items) { item in HStack { Text(catalog.name(item.id)); Spacer(); if journal.stock.contains(item.id) { Image(systemName: "checkmark").accessibilityLabel("Im Vorrat").foregroundStyle(Color.accentColor) }; Text(item.amount).foregroundStyle(.secondary) }.padding(.vertical, 4) }
+                        ForEach(recipe.items) { item in HStack { Text(catalog.name(item.id)); Spacer(); if journal.stock.contains(item.id) { Image(systemName: "checkmark").accessibilityLabel("Im Vorrat").foregroundStyle(Color.accentColor) }; Text(item.amount).foregroundStyle(Color.primary.opacity(0.7)) }.padding(.vertical, 4) }
                     }
                     if cooking {
                         JournalPanel {
@@ -187,7 +187,7 @@ struct RecipePage: View {
             let missing = journal.missing(recipe)
             if missing.isEmpty { Button { cooking = true } label: { Text("Jetzt kochen").frame(maxWidth: .infinity, minHeight: 44) }.buttonStyle(.borderedProminent).buttonBorderShape(.capsule) }
             else {
-                Text("Noch nicht im Vorrat: \(missing.map(catalog.name).joined(separator: ", ")).").foregroundStyle(.secondary)
+                Text("Noch nicht im Vorrat: \(missing.map(catalog.name).joined(separator: ", ")).").foregroundStyle(Color.primary.opacity(0.7))
                 Button { update { $0.buyMissing(recipe) }; notice = "Fehlende Zutaten ergänzt. Du findest sie unter Plan → Einkauf." } label: { Text("Fehlendes auf die Liste").frame(maxWidth: .infinity, minHeight: 44) }.buttonStyle(.borderedProminent).buttonBorderShape(.capsule)
             }
             JournalPanel {

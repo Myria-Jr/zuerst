@@ -29,7 +29,7 @@ struct ProfileView: View {
             Form {
                 Section("Ganz du") {
                     TextField("Dein Name", text: Binding(get: { journal.name }, set: { name in update { $0.name = String(name.prefix(40)) } })).textContentType(.nickname)
-                    Text("Der Name wird auf diesem Gerät gespeichert.").font(.footnote).foregroundStyle(.secondary)
+                    Text("Der Name wird auf diesem Gerät gespeichert.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
                 }
                 Section("Konto & Sicherung") {
                     if let account = cloud.account { signedIn(account) } else { signIn }
@@ -39,11 +39,11 @@ struct ProfileView: View {
                 Section {
                     Button { exporting = true } label: { Label("Exportieren", systemImage: "square.and.arrow.up").frame(minHeight: 44) }
                     Button { importing = true } label: { Label("Importieren", systemImage: "square.and.arrow.down").frame(minHeight: 44) }
-                    if !fileMessage.isEmpty { Text(fileMessage).font(.subheadline).foregroundStyle(.secondary) }
+                    if !fileMessage.isEmpty { Text(fileMessage).font(.subheadline).foregroundStyle(Color.primary.opacity(0.7)) }
                 } header: { Text("Deine Daten gehören dir") } footer: { Text("Sichere dein Journal als Datei. Beim Import entscheidest du, ob die lokalen Daten ersetzt werden.") }
                 Section("Über Zuerst") {
                     Text("Dein Begleiter für Einkauf, Vorrat und selbst gekochte Gerichte. Bonfotos werden auf diesem Gerät gelesen. Die Cloud-Sicherung ist freiwillig. Deine Anmeldung wird in der Apple Keychain gespeichert.")
-                    Text("Eine Marke von Odkaz Labs. Version 1.2.0.").font(.footnote).foregroundStyle(.secondary)
+                    Text("Eine Marke von Odkaz Labs. Version 1.2.0.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
                     Link("Quellcode auf GitHub", destination: URL(string: "https://github.com/Myria-Jr/zuerst")!)
                 }
             }.navigationTitle("Dein Zuerst").toolbar { ToolbarItem(placement: .confirmationAction) { Button("Fertig") { dismiss() } } }
@@ -69,7 +69,7 @@ struct ProfileView: View {
     private func signedIn(_ account: CloudAccount) -> some View {
         Group {
             Text("Angemeldet als \(account.email)")
-            Text("Sichere Vorrat, Sammlung, Plan und Verlauf. Es wird nur übertragen, wenn du auf „Jetzt sichern“ tippst.").font(.subheadline).foregroundStyle(.secondary)
+            Text("Sichere Vorrat, Sammlung, Plan und Verlauf. Es wird nur übertragen, wenn du auf „Jetzt sichern“ tippst.").font(.subheadline).foregroundStyle(Color.primary.opacity(0.7))
             Button { Task { await cloud.run { try await cloud.save(journal) } } } label: { Label("Jetzt sichern", systemImage: "icloud.and.arrow.up").frame(minHeight: 44) }.disabled(cloud.busy)
             Button { Task { await cloud.run { restore = try await cloud.restore(catalog: catalog) } } } label: { Label("Sicherung wiederherstellen", systemImage: "icloud.and.arrow.down").frame(minHeight: 44) }.disabled(cloud.busy)
             Button("Abmelden") { Task { await cloud.run { await cloud.signOut() } } }.frame(minHeight: 44).disabled(cloud.busy)
@@ -78,7 +78,7 @@ struct ProfileView: View {
     }
     private var signIn: some View {
         Group {
-            Text("Freiwillig. Dein Journal funktioniert auch ohne Anmeldung. Mit einem Konto kannst du es sichern und auf einem anderen Gerät wiederherstellen.").font(.subheadline).foregroundStyle(.secondary)
+            Text("Freiwillig. Dein Journal funktioniert auch ohne Anmeldung. Mit einem Konto kannst du es sichern und auf einem anderen Gerät wiederherstellen.").font(.subheadline).foregroundStyle(Color.primary.opacity(0.7))
             Picker("Konto", selection: $register) { Text("Anmelden").tag(false); Text("Konto erstellen").tag(true) }.pickerStyle(.segmented)
             TextField("E-Mail", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
             SecureField("Passwort · mindestens 8 Zeichen", text: $password).textContentType(register ? .newPassword : .password)

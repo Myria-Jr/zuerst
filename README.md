@@ -46,6 +46,8 @@ Für den APK-Download vor dem Webbuild die signierte, geprüfte Release-Datei na
 
 Für Vercel: Nach `npm run build` erstellt `node scripts/stage-vercel.mjs` die statische Build-Ausgabe. Aus dem mit Zuerst verknüpften Projektordner kann sie mit `vercel deploy --prebuilt --prod` veröffentlicht werden.
 
+Der verbundene Git-Build auf Vercel verwendet `node scripts/fetch-apk.mjs && npm run build`. Das Skript lädt die bereits veröffentlichte APK und prüft die in `release/android.json` festgelegte SHA-256-Prüfsumme. Bei einer neuen Android-Version zuerst die geprüfte APK auf Sites veröffentlichen und anschließend das Release-Manifest aktualisieren. Private Signaturschlüssel werden dafür nicht benötigt.
+
 ## QR-Code für den Kühlschrank
 
 Öffne [zuerst.vercel.app/kochen/](https://zuerst.vercel.app/kochen/) in Chrome und wähle **Speichern und teilen → QR-Code erstellen**. Lade den Code herunter und drucke ihn aus. Scanne ihn vor dem Aufhängen mit der Handykamera, am besten ohne WLAN. Der Zusatz `/kochen/` öffnet direkt die Zutatenauswahl. Die Startadresse ohne diesen Zusatz führt zum Küchenjournal.
