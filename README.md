@@ -36,6 +36,8 @@ Das native Küchenjournal bündelt passende Gerichte, Vorrat und Kochverlauf. Du
 
 Bei Rezeptänderungen `npm run sync:native` ausführen und `shared/catalog.json` mit einchecken. `npm run sync:native -- --check` prüft die Übereinstimmung. Der GitHub-Workflow in `.github/workflows/native.yml` prüft die nativen Builds ohne Verteilungsschlüssel.
 
+Die Download-APK enthält ARM64 und ARMv7 für Android-Smartphones und Tablets. Für x86-Emulatoren mit `-PzuerstAllAbis=true` bauen; damit werden auch die x86-Bibliotheken eingebunden. Die Bonerkennung bleibt vollständig auf dem Gerät.
+
 ## Statisch veröffentlichen
 
 Veröffentliche den **Inhalt** von `out/` inklusive `_next/` als Wurzel einer HTTPS-Website. Die App benötigt weder einen Node-Server noch Konfiguration oder Zugangsdaten. Die Startadresse ist die Wurzel der Website (`/`).
