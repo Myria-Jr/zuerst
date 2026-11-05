@@ -6,11 +6,76 @@ struct MealEntry: Codable, Identifiable {
     let name: String
     let date: Date
     var ingredients: [String]?
+    private enum CodingKeys: String, CodingKey { case id, name, date, day, ingredients }
+    init(name: String, date: Date, ingredients: [String]?) { self.name = name; self.date = date; self.ingredients = ingredients }
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        name = try values.decode(String.self, forKey: .name)
+        ingredients = try values.decodeIfPresent([String].self, forKey: .ingredients)
+        if let day = try values.decodeIfPresent(String.self, forKey: .day), let parsed = JournalDates.parse(day) { date = parsed }
+        else { date = try values.decode(Date.self, forKey: .date) }
+    }
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(id, forKey: .id); try values.encode(name, forKey: .name)
+        try values.encode(JournalDates.key(date), forKey: .day); try values.encode(ingredients ?? [], forKey: .ingredients)
+    }
 }
+
+enum JournalDates {
+    static func key(_ date: Date) -> String { { let f = DateFormatter(); f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "yyyy-MM-dd"; return f.string(from: date) }() }
+    static func parse(_ day: String) -> Date? {
+        let formatter = DateFormatter(); formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.dateFormat = "yyyy-MM-dd"; formatter.isLenient = false
+        guard let date = formatter.date(from: day), formatter.string(from: date) == day else { return nil }; return date
+    }
+}
+
+struct MealPlan: Codable { let day: String; let recipeId: String }
 
 struct KitchenJournal: Codable {
     var stock: [String] = []
     var meals: [MealEntry] = []
+    var favorites: [String] = []
+    var shopping: [String] = []
+    var plans: [MealPlan] = []
+    var name = ""
+    var expiry: [String: String] = [:]
+    private enum CodingKeys: String, CodingKey { case version, stock, meals, favorites, shopping, plans, name, expiry }
+    init() {}
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let version = try c.decodeIfPresent(Int.self, forKey: .version) ?? 2
+        guard version == 2 else { throw DecodingError.dataCorruptedError(forKey: .version, in: c, debugDescription: "Neuere App-Version erforderlich") }
+        stock = try c.decode([String].self, forKey: .stock); meals = try c.decode([MealEntry].self, forKey: .meals)
+        favorites = try c.decodeIfPresent([String].self, forKey: .favorites) ?? []
+        shopping = try c.decodeIfPresent([String].self, forKey: .shopping) ?? []
+        plans = try c.decodeIfPresent([MealPlan].self, forKey: .plans) ?? []
+        name = String((try c.decodeIfPresent(String.self, forKey: .name) ?? "").prefix(40))
+        expiry = try c.decodeIfPresent([String:String].self, forKey: .expiry) ?? [:]
+    }
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(2, forKey: .version); try c.encode(stock, forKey: .stock); try c.encode(meals, forKey: .meals)
+        try c.encode(favorites, forKey: .favorites); try c.encode(shopping, forKey: .shopping); try c.encode(plans, forKey: .plans)
+        try c.encode(name, forKey: .name); try c.encode(expiry, forKey: .expiry)
+    }
+    func missing(_ recipe: Recipe) -> [String] { recipe.items.map(\.id).filter { !stock.contains($0) } }
+    mutating func favorite(_ id: String) { if favorites.contains(id) { favorites.removeAll { $0 == id } } else { favorites.append(id) } }
+    mutating func buyMissing(_ recipe: Recipe) { for id in missing(recipe) where !shopping.contains(id) { shopping.append(id) } }
+    mutating func bought(_ ids: [String]) { add(ids); shopping.removeAll { ids.contains($0) } }
+    mutating func plan(_ recipe: Recipe, day: Date) { let key = JournalDates.key(day); plans.removeAll { $0.day == key }; plans.append(MealPlan(day: key, recipeId: recipe.id)) }
+    static func parse(_ data: Data, catalog: Catalog) throws -> KitchenJournal {
+        guard data.count <= 1_000_000 else { throw CocoaError(.fileReadTooLarge) }
+        var result = try JSONDecoder().decode(KitchenJournal.self, from: data)
+        let valid = Set(catalog.ingredients.map(\.id)); let recipes = Set(catalog.recipes.map(\.id))
+        var seen = Set<String>(); result.stock = result.stock.filter { valid.contains($0) && seen.insert($0).inserted }
+        seen = []; result.shopping = result.shopping.filter { valid.contains($0) && seen.insert($0).inserted }
+        seen = []; result.favorites = result.favorites.filter { recipes.contains($0) && seen.insert($0).inserted }
+        seen = []; result.plans = Array(result.plans.filter { recipes.contains($0.recipeId) && JournalDates.parse($0.day) != nil && seen.insert($0.day).inserted }.prefix(366))
+        result.expiry = result.expiry.filter { result.stock.contains($0.key) && JournalDates.parse($0.value) != nil }
+        return result
+    }
 
     mutating func add(_ ids: [String]) {
         var present = Set(stock)
@@ -40,10 +105,12 @@ struct JournalHome: View {
     @State private var tab = Tab.today
     @State private var receipt = false
     @State private var about = false
+    @State private var detail: Recipe?
+    @State private var plannedDay = Date.now
     @State private var cooking: CookingSession?
     @State private var removal: MealEntry?
 
-    private enum Tab: Hashable { case today, stock, history }
+    private enum Tab: Hashable { case today, recipes, stock, plan, history }
     private struct CookingSession: Identifiable {
         let id = UUID()
         let preset: [String]
@@ -60,8 +127,12 @@ struct JournalHome: View {
         TabView(selection: $tab) {
             page("Heute") { today }
                 .tabItem { Label("Heute", systemImage: "sun.max") }.tag(Tab.today)
+            page("Rezepte") { RecipeLibrary(catalog: catalog, journal: journal, open: { detail = $0 }, update: update) }
+                .tabItem { Label("Rezepte", systemImage: "book") }.tag(Tab.recipes)
             page("Vorrat") { pantry }
                 .tabItem { Label("Vorrat", systemImage: "basket") }.tag(Tab.stock)
+            page("Plan") { WeeklyPlanner(catalog: catalog, journal: journal, open: { detail = $0 }, select: { plannedDay = $0; tab = .recipes }, update: update) }
+                .tabItem { Label("Plan", systemImage: "calendar") }.tag(Tab.plan)
             page("Verlauf") { history }
                 .tabItem { Label("Verlauf", systemImage: "chart.bar.xaxis") }.tag(Tab.history)
         }
@@ -73,14 +144,13 @@ struct JournalHome: View {
             }
         }
         .sheet(isPresented: $about) {
-            NavigationStack {
-                List {
-                    Text("Dein Küchenjournal für Vorrat und selbst gekochte Gerichte. Bonfotos werden auf diesem Gerät gelesen. Gespeichert werden deine bestätigten Zutaten und Gerichte.")
-                    Text("Eine Marke von Odkaz Labs.").foregroundStyle(.secondary)
-                }
-                .navigationTitle("Über Zuerst")
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Fertig") { about = false } } }
-            }.presentationDetents([.medium, .large])
+            ProfileView(catalog: catalog, journal: journal, update: update)
+        }
+        .sheet(item: $detail) { recipe in
+            RecipePage(catalog: catalog, recipe: recipe, journal: journal, initialDay: plannedDay, update: update) {
+                update { $0.meals.insert(MealEntry(name: recipe.name, date: .now, ingredients: recipe.items.map(\.id)), at: 0) }
+                detail = nil; tab = .history
+            }
         }
         .fullScreenCover(item: $cooking) { session in
             Kitchen(catalog: catalog, preset: session.preset, stock: session.stock, onClose: { cooking = nil }) { recipe in
@@ -104,7 +174,7 @@ struct JournalHome: View {
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle(title)
             .toolbar { ToolbarItem(placement: .topBarTrailing) {
-                Button { about = true } label: { Label("Über Zuerst", systemImage: "info.circle").labelStyle(.iconOnly) }
+                Button { about = true } label: { Label("Profil und Sicherung", systemImage: "person.crop.circle").labelStyle(.iconOnly) }
             } }
         }
     }
@@ -114,6 +184,7 @@ struct JournalHome: View {
         return VStack(alignment: .leading, spacing: 13) {
             Text(Date.now.formatted(.dateTime.locale(Locale(identifier: "de_DE")).weekday(.wide).day().month(.wide)))
                 .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+            if !journal.name.isEmpty { Text("Hallo, \(journal.name)").font(.title2.bold()) }
             JournalPanel(tint: .mint) {
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .center, spacing: 18) { suggestion(ready.first); readyCount(ready.count) }
@@ -129,6 +200,19 @@ struct JournalHome: View {
             ViewThatFits(in: .horizontal) {
                 HStack(alignment: .top, spacing: 9) { stockMetric; historyMetric }
                 VStack(spacing: 9) { stockMetric; historyMetric }
+            }
+            let soon = stock.filter { journal.expiry[$0].map { $0 <= JournalDates.key(Calendar.current.date(byAdding: .day, value: 2, to: .now)!) } ?? false }
+            if !soon.isEmpty { JournalPanel(tint: .orange) {
+                Text("Zuerst aufbrauchen").font(.headline)
+                ForEach(soon, id: \.self) { id in Text("\(catalog.name(id)) · \(journal.expiry[id] ?? "")") }
+                Text("Nach deinen eingetragenen Daten. Prüfe Lebensmittel vor dem Verwenden.").font(.footnote).foregroundStyle(.secondary)
+            } }
+            JournalPanel {
+                Label("Heute auf dem Plan", systemImage: "calendar").font(.headline)
+                let planned = catalog.recipes.first { recipe in journal.plans.contains { $0.day == JournalDates.key(.now) && $0.recipeId == recipe.id } }
+                if let planned { Button(planned.name) { detail = planned }.buttonStyle(.plain) }
+                else { Text("Ein kleiner Plan macht den nächsten Einkauf leichter.").foregroundStyle(.secondary) }
+                Button("Plan ansehen") { tab = .plan }.buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
             }
             JournalPanel(tint: .indigo) {
                 Label("Vom Einkauf in den Vorrat", systemImage: "receipt").font(.headline)
@@ -189,7 +273,10 @@ struct JournalHome: View {
                 ForEach(stock.sorted { catalog.name($0).localizedCompare(catalog.name($1)) == .orderedAscending }, id: \.self) { id in
                     Divider()
                     HStack {
-                        Text(catalog.name(id)); Spacer()
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(catalog.name(id))
+                            StockDate(id: id, journal: journal, update: update)
+                        }; Spacer()
                         Button { update { $0.stock.removeAll { $0 == id } } } label: {
                             Label("\(catalog.name(id)) aus Vorrat entfernen", systemImage: "xmark.circle").labelStyle(.iconOnly)
                                 .frame(minWidth: 44, minHeight: 44)

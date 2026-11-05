@@ -1,6 +1,6 @@
 # Zuerst
 
-Deutschsprachige App von Odkaz Labs: Wähle bis zu drei Zutaten, bestätige, was du noch da hast, und erhalte ein Gericht für zwei Personen in höchstens 20 Minuten. Web, Android und iOS verwenden denselben Katalog mit 24 Rezepten und laufen ohne Konto oder Backend.
+Deutschsprachige App von Odkaz Labs: Wähle bis zu drei Zutaten, bestätige, was du noch da hast, und erhalte ein Gericht für zwei Personen in höchstens 20 Minuten. Web, Android und iOS verwenden denselben Katalog mit 24 Rezepten. Die Kernfunktionen laufen lokal ohne Konto. Eine freiwillige Anmeldung ermöglicht manuelle Cloud-Sicherungen.
 
 ## Lokal starten
 
@@ -12,6 +12,20 @@ npm run dev
 ```
 
 Öffne [localhost:3000](http://localhost:3000). `npm test` prüft Rezeptkatalog, Suche und Matching. `npm run build` erstellt den statischen Export; `npm start` zeigt diesen Export lokal an.
+
+## Küchenjournal 1.2
+
+Heute, Rezeptbibliothek mit Merkliste und Filtern, Vorrat mit optionalen Aufbrauchdaten, Wochenplan mit Einkaufsliste und Kochverlauf. Fehlende Zutaten lassen sich aus Rezepten oder dem gesamten Wochenplan übernehmen. „Gekauftes übernehmen“ ergänzt ausgewählte Zutaten im Vorrat. Die Liste bündelt Zutaten; Mengen stehen in den Rezepten. Der Web-Einstieg ist die Übersicht; `/kochen/` öffnet direkt die Zutatenauswahl.
+
+Im Profil lassen sich Daten als JSON exportieren und nach Bestätigung wiederherstellen. Datenformat Version 2 ist zwischen Web, Android und iOS austauschbar. Alte native Journale werden beim Laden übernommen.
+
+## Anmeldung und Sicherung
+
+E-Mail/Passwort-Anmeldung über Neon Auth (Managed Better Auth), eigene Neon-Datenbank in Frankfurt. Passwörter werden vom Auth-Dienst verwaltet. Native Sitzungen liegen verschlüsselt im Android Keystore beziehungsweise in der Apple Keychain; im Web nutzt die Anmeldung HttpOnly-Cookies. Auf der Vercel-Startadresse vermeidet ein Auth-Proxy Abhängigkeiten von Drittanbieter-Cookies. Andere statische Hosts verwenden den Auth-Dienst direkt; der Browser muss dessen Cookies zulassen.
+
+Es gibt keine automatische Synchronisierung. „Jetzt sichern“ ersetzt die Cloud-Sicherung des angemeldeten Kontos. „Sicherung wiederherstellen“ zeigt eine Bestätigung vor dem Ersetzen der lokalen Daten. Bonfotos und Bontext werden nicht gesichert. Die Cloud-Sicherung kann im Profil gelöscht werden. Datei-Export und Kernfunktionen benötigen keinen Cloud-Dienst.
+
+Die öffentlichen Dienstadressen stehen in den Cloud-Modulen. Datenbank-Zugangsdaten und private Schlüssel gehören nie in App oder Repository. `backend/schema.sql` dokumentiert die bereits eingerichtete Tabelle mit nutzergebundener Row-Level Security. Für eigene Bereitstellungen Neon Auth und Data API aktivieren, das Schema auf einer neuen Datenbank anlegen, eigene Dienstadressen einsetzen und die HTTPS-Startadresse als vertrauenswürdige Origin freigeben.
 
 ## Native Apps
 
@@ -32,4 +46,4 @@ Für Vercel: Nach `npm run build` erstellt `node scripts/stage-vercel.mjs` die s
 
 ## QR-Code für den Kühlschrank
 
-Öffne die veröffentlichte HTTPS-Startadresse in Chrome und wähle **Speichern und teilen → QR-Code erstellen**. Lade den Code herunter und drucke ihn aus. Scanne ihn vor dem Aufhängen mit der Handykamera, am besten ohne WLAN: Der Link soll direkt die Zutatenauswahl öffnen.
+Öffne [zuerst.vercel.app/kochen/](https://zuerst.vercel.app/kochen/) in Chrome und wähle **Speichern und teilen → QR-Code erstellen**. Lade den Code herunter und drucke ihn aus. Scanne ihn vor dem Aufhängen mit der Handykamera, am besten ohne WLAN. Der Zusatz `/kochen/` öffnet direkt die Zutatenauswahl. Die Startadresse ohne diesen Zusatz führt zum Küchenjournal.

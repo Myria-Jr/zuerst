@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,8 +34,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private enum class JournalTab(val label: String) { Today("Heute"), Stock("Vorrat"), History("Verlauf") }
-private enum class JournalPage { Tabs, Receipt, Kitchen }
+private enum class JournalTab(val label: String) { Today("Heute"), Recipes("Rezepte"), Stock("Vorrat"), Plan("Plan"), History("Verlauf") }
+private enum class JournalPage { Tabs, Receipt, Kitchen, Profile, Recipe }
 private val dateFormat = DateTimeFormatter.ofPattern("EEEE, d. MMMM", Locale.GERMAN)
 private val weekdayFormat = DateTimeFormatter.ofPattern("EE", Locale.GERMAN)
 
@@ -47,6 +48,8 @@ internal fun JournalScreen(catalog: Catalog) {
     var tab by rememberSaveable { mutableStateOf(JournalTab.Today) }
     var page by rememberSaveable { mutableStateOf(JournalPage.Tabs) }
     var fromStock by rememberSaveable { mutableStateOf(false) }
+    var recipeId by rememberSaveable { mutableStateOf<String?>(null) }
+    var plannedDay by rememberSaveable { mutableStateOf(LocalDate.now().toString()) }
     var about by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     var notice by remember { mutableStateOf<String?>(null) }
@@ -69,21 +72,21 @@ internal fun JournalScreen(catalog: Catalog) {
         return
     }
 
-    BackHandler(enabled = page == JournalPage.Receipt || tab != JournalTab.Today) {
-        if (page == JournalPage.Receipt) page = JournalPage.Tabs else tab = JournalTab.Today
+    BackHandler(enabled = page != JournalPage.Tabs || tab != JournalTab.Today) {
+        if (page != JournalPage.Tabs) page = JournalPage.Tabs else tab = JournalTab.Today
     }
     Scaffold(
         modifier = Modifier.imePadding(),
         topBar = {
             TopAppBar(
-                title = { Text(if (page == JournalPage.Receipt) "Kassenbon" else "Zuerst.", fontWeight = FontWeight.Black) },
-                navigationIcon = { if (page == JournalPage.Receipt) IconButton({ page = JournalPage.Tabs }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") } },
-                actions = { if (page == JournalPage.Tabs) IconButton({ about = true }) { Icon(Icons.Default.Info, "Über Zuerst") } },
+                title = { Text(when(page) { JournalPage.Receipt -> "Kassenbon"; JournalPage.Profile -> "Dein Zuerst"; JournalPage.Recipe -> "Rezept"; else -> "Zuerst." }, fontWeight = FontWeight.Black) },
+                navigationIcon = { if (page != JournalPage.Tabs) IconButton({ page = JournalPage.Tabs }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Zurück") } },
+                actions = { if (page == JournalPage.Tabs) IconButton({ page = JournalPage.Profile }) { Icon(Icons.Default.AccountCircle, "Profil und Sicherung") } },
             )
         },
         bottomBar = {
             if (page == JournalPage.Tabs) NavigationBar {
-                val icons = listOf(Icons.Default.Home, Icons.Default.ShoppingCart, Icons.Default.DateRange)
+                val icons = listOf(Icons.Default.Home, Icons.AutoMirrored.Filled.List, Icons.Default.ShoppingCart, Icons.Default.DateRange, Icons.Default.Check)
                 JournalTab.entries.forEach { item ->
                     NavigationBarItem(selected = tab == item, onClick = { tab = item },
                         icon = { Icon(icons[item.ordinal], null) }, label = { Text(item.label) })
@@ -96,7 +99,15 @@ internal fun JournalScreen(catalog: Catalog) {
             key(page, tab) {
                 Column(Modifier.widthIn(max = 640.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(13.dp)) {
-                    if (page == JournalPage.Receipt) {
+                    if (page == JournalPage.Profile) {
+                        Profile(catalog, journal, ::update)
+                    } else if (page == JournalPage.Recipe) {
+                        catalog.recipes.find { it.id == recipeId }?.let { recipe ->
+                            RecipePage(catalog, recipe, journal, LocalDate.parse(plannedDay), ::update, onCooked = {
+                                update(journal.cooked(recipe)); tab = JournalTab.History; page = JournalPage.Tabs; notice = "Gericht eingetragen"
+                            })
+                        }
+                    } else if (page == JournalPage.Receipt) {
                         ReceiptScreen(catalog) { ids ->
                             val count = ids.count { it !in journal.stock }
                             update(journal.addStock(ids)); tab = JournalTab.Stock; page = JournalPage.Tabs
@@ -104,7 +115,9 @@ internal fun JournalScreen(catalog: Catalog) {
                         }
                     } else when (tab) {
                         JournalTab.Today -> Today(catalog, journal, { openKitchen(it) }, { page = JournalPage.Receipt }, { tab = it })
-                        JournalTab.Stock -> Stock(catalog, journal, { page = JournalPage.Receipt }, { update(journal.addStock(listOf(it))) }, { update(journal.removeStock(it)) })
+                        JournalTab.Recipes -> RecipeLibrary(catalog, journal, { recipeId = it.id; page = JournalPage.Recipe }, { update(journal.favorite(it)) })
+                        JournalTab.Stock -> Stock(catalog, journal, { page = JournalPage.Receipt }, { update(journal.addStock(listOf(it))) }, { update(journal.removeStock(it)) }, ::update)
+                        JournalTab.Plan -> Planner(catalog, journal, ::update, { recipeId = it.id; page = JournalPage.Recipe }, { day -> plannedDay = day.toString(); tab = JournalTab.Recipes })
                         JournalTab.History -> History(catalog, journal) { update(journal.removeMeal(it)) }
                     }
                     Spacer(Modifier.height(6.dp))
@@ -122,7 +135,7 @@ private fun Today(catalog: Catalog, journal: Journal, cook: (Boolean) -> Unit, r
     val ready = remember(journal.stock) { catalog.ready(journal.stock) }
     val scheme = MaterialTheme.colorScheme
     Text(LocalDate.now().format(dateFormat), color = scheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
-    JournalTitle("Heute")
+    JournalTitle(if (journal.name.isBlank()) "Heute" else "Hallo, ${journal.name}")
     JournalCard(scheme.primaryContainer, scheme.onPrimaryContainer) {
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
@@ -141,6 +154,18 @@ private fun Today(catalog: Catalog, journal: Journal, cook: (Boolean) -> Unit, r
     Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
         Metric("Vorrat", journal.stock.size, "Zutaten", Modifier.weight(1f)) { navigate(JournalTab.Stock) }
         Metric("Gekocht", journal.counts().sumOf { it.second }, "letzte 7 Tage", Modifier.weight(1f)) { navigate(JournalTab.History) }
+    }
+    val soon = journal.stock.filter { journal.expiry[it]?.let { day -> day <= LocalDate.now().plusDays(2) } == true }.sortedBy { journal.expiry[it] }
+    if (soon.isNotEmpty()) JournalCard(scheme.tertiaryContainer, scheme.onTertiaryContainer) {
+        Text("Zuerst aufbrauchen", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        soon.forEach { Text("${catalog.name(it)} · ${journal.expiry[it]?.format(dateFormat)}") }
+        Text("Nach deinen eingetragenen Daten. Prüfe Lebensmittel vor dem Verwenden.", style = MaterialTheme.typography.bodySmall)
+    }
+    JournalCard {
+        Text("Heute auf dem Plan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        val planned = catalog.recipes.find { recipe -> journal.plans.any { it.day == LocalDate.now() && it.recipeId == recipe.id } }
+        Text(planned?.let { "${it.name} · ${it.minutes} Min." } ?: "Ein kleiner Plan macht den nächsten Einkauf leichter.")
+        TextButton({ navigate(JournalTab.Plan) }, Modifier.heightIn(min = 48.dp)) { Text(if (planned == null) "Gericht einplanen" else "Plan ansehen") }
     }
     JournalCard(scheme.secondaryContainer, scheme.onSecondaryContainer) {
         Text("Vom Einkauf in den Vorrat", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -161,7 +186,7 @@ private fun Metric(title: String, number: Int, detail: String, modifier: Modifie
 }
 
 @Composable
-private fun Stock(catalog: Catalog, journal: Journal, receipt: () -> Unit, add: (String) -> Unit, remove: (String) -> Unit) {
+private fun Stock(catalog: Catalog, journal: Journal, receipt: () -> Unit, add: (String) -> Unit, remove: (String) -> Unit, update: (Journal) -> Unit) {
     JournalTitle("Vorrat")
     Text("Hier steht, was du zu Hause hast.", color = MaterialTheme.colorScheme.onSurfaceVariant)
     Button(receipt, Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Icon(Icons.Default.Add, null); Spacer(Modifier.width(6.dp)); Text("Bon erfassen") }
@@ -174,7 +199,10 @@ private fun Stock(catalog: Catalog, journal: Journal, receipt: () -> Unit, add: 
         if (journal.stock.isEmpty()) Text("Füge Zutaten einzeln oder über einen Bon hinzu.")
         journal.stock.sortedBy(catalog::name).forEach { id ->
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(catalog.name(id), Modifier.weight(1f))
+                Column(Modifier.weight(1f)) {
+                    Text(catalog.name(id))
+                    ExpiryDate(id, journal) { day -> update(journal.copy(expiry = if(day == null) journal.expiry - id else journal.expiry + (id to day))) }
+                }
                 IconButton({ remove(id) }) { Icon(Icons.Default.Close, "${catalog.name(id)} aus Vorrat entfernen") }
             }
         }

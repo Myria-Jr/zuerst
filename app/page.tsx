@@ -1,262 +1,99 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Clock, Download, Info, Plus, RotateCw, Search, Users, Utensils, X } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { confirmationChoices, matchRecipes, searchIngredients } from '../lib/match';
-import { label, pantry, quick, recipes, type Ingredient, type Recipe } from '../lib/recipes';
-import { IngredientArt } from './ingredient-art';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Sun, BookOpen, CalendarDays, ChartNoAxesColumn, UserRound, ArrowUpRight, Plus, X, Search, Heart, Check, ShoppingBasket, ReceiptText, Cloud, Download, Upload, ChevronRight, Clock3, Leaf, Utensils, LogOut } from 'lucide-react';
+import { ingredients, label, recipes, type Ingredient, type Recipe } from '../lib/recipes';
+import { searchIngredients } from '../lib/match';
+import { addMissing, bought, dayKey, daysFromToday, emptyJournal, missing, parseJournal, readyRecipes, variety, weekCounts, type Journal } from '../lib/journal';
+import { authRequest, backupRequest, type Account } from '../lib/cloud';
+import './journal.css';
 
-type Screen = 'pick' | 'confirm' | 'result' | 'cook';
-const screens: readonly Screen[] = ['pick', 'confirm', 'result', 'cook'];
-const stepNames = ['Auswählen', 'Bestätigen', 'Kochen'];
-const androidApk = process.env.NEXT_PUBLIC_ZUERST_APK;
+type Tab = 'today' | 'recipes' | 'stock' | 'plan' | 'history' | 'profile';
+const tabs = [{id:'today',title:'Heute',icon:Sun},{id:'recipes',title:'Rezepte',icon:BookOpen},{id:'stock',title:'Vorrat',icon:ShoppingBasket},{id:'plan',title:'Plan',icon:CalendarDays},{id:'history',title:'Verlauf',icon:ChartNoAxesColumn}] as const;
+const dateLabel = (day: string, short = false) => new Date(day+'T12:00:00').toLocaleDateString('de-DE', short ? {weekday:'short',day:'numeric',month:'short'} : {weekday:'long',day:'numeric',month:'long'});
+function Panel({children,className=''}:{children:ReactNode;className?:string}) { return <section className={`j-panel ${className}`}>{children}</section>; }
 
-function Steps({ screen }: { screen: Screen }) {
-  const current = Math.min(screens.indexOf(screen), 2);
-  return <ol className="steps" aria-label="Fortschritt">
-    {stepNames.map((name, index) => <li key={name} aria-current={index === current ? 'step' : undefined} className={index <= current ? 'reached' : ''}>
-      <span className="step-number" aria-hidden="true">{index < current ? <Check size={13} /> : index + 1}</span><span>{name}</span>
-      {index < 2 && <ChevronRight size={13} className="step-divider" aria-hidden="true" />}
-    </li>)}
-  </ol>;
-}
-
-function Button({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
-  return <button className="primary" type="button" onClick={onClick} disabled={disabled}>{children}</button>;
-}
-
-function RecipeDetail({ recipe }: { recipe: Recipe }) {
-  return <div className="cook-grid">
-    <section className="ingredient-list" aria-labelledby="amount-title">
-      <h2 id="amount-title">Zutaten</h2>
-      <p className="small muted">Mengen für 2 Portionen</p>
-      <dl>{recipe.items.map(([id, amount]) => <div key={id}><dt>{label(id)}</dt><dd>{amount}</dd></div>)}</dl>
-    </section>
-    <section className="instructions" aria-labelledby="cook-title">
-      <h2 id="cook-title">So geht’s</h2>
-      <ol>{recipe.steps.map((step, index) => <li key={step}><span className="instruction-number" aria-hidden="true">{index + 1}</span><p>{step}</p></li>)}</ol>
-    </section>
-  </div>;
-}
-
-export default function Home() {
-  const [screen, setScreen] = useState<Screen>('pick');
-  const [picked, setPicked] = useState<Ingredient[]>([]);
-  const [confirmed, setConfirmed] = useState<Ingredient[]>([]);
-  const [query, setQuery] = useState('');
-  const [idea, setIdea] = useState(0);
+export default function JournalApp() {
+  const [state,setState] = useState<Journal>(emptyJournal);
+  const [loaded,setLoaded] = useState(false);
+  const [tab,setTab] = useState<Tab>('today');
+  const [query,setQuery] = useState('');
+  const [filter,setFilter] = useState('all');
+  const [shopping,setShopping] = useState(false);
+  const [checked,setChecked] = useState<Ingredient[]>([]);
+  const [detail,setDetail] = useState<Recipe>();
+  const [planDay,setPlanDay] = useState(dayKey());
+  const [bon,setBon] = useState(false);
+  const [bonText,setBonText] = useState('');
+  const [review,setReview] = useState<Ingredient[]|null>(null);
+  const [notice,setNotice] = useState('');
+  const [account,setAccount] = useState<Account|null>(null);
+  const [authMode,setAuthMode] = useState<'login'|'register'>('login');
+  const [busy,setBusy] = useState(false);
+  const [restore,setRestore] = useState<Journal>();
+  const [cloudDate,setCloudDate] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
-  const search = useRef<HTMLInputElement>(null);
-  const dialog = useRef<HTMLDialogElement>(null);
-  const firstRender = useRef(true);
-  const focusAfterPick = useRef(false);
-  const focusAfterConfirm = useRef(false);
-  const chosen = useRef<HTMLDivElement>(null);
-  const ingredientsRef = useRef({ picked, confirmed });
-  useEffect(() => { ingredientsRef.current = { picked, confirmed }; }, [picked, confirmed]);
+  const modal = useRef<HTMLDialogElement>(null);
+  const ready = readyRecipes(state);
+  const counts = weekCounts(state);
+  const count = counts.reduce((sum,d)=>sum+d.count,0);
+  const todayPlan = recipes.find(r=>state.plans.some(p=>p.day===dayKey()&&p.recipeId===r.id));
+  const soon = state.stock.filter(id=>state.expiry[id] && state.expiry[id]! <= daysFromToday(3)[2]).sort((a,b)=>state.expiry[a]!.localeCompare(state.expiry[b]!));
 
-  useEffect(() => {
-    history.replaceState({ ...history.state, zuerst: 'pick' }, '');
-    const onPop = (event: PopStateEvent) => {
-      const target: Screen = event.state?.zuerst ?? 'pick';
-      const { picked, confirmed } = ingredientsRef.current;
-      if (target !== 'pick' && !picked.length) {
-        history.go(-screens.indexOf(target));
-        return;
-      }
-      if (target === 'cook' && !matchRecipes(picked, confirmed).complete.length) {
-        history.back();
-        return;
-      }
-      setScreen(target);
-      setQuery('');
-    };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
-
-  useEffect(() => {
-    if (firstRender.current) { firstRender.current = false; return; }
-    window.scrollTo(0, 0);
-    heading.current?.focus({ preventScroll: true });
-  }, [screen]);
-
-  useEffect(() => {
-    if (!focusAfterPick.current) return;
-    focusAfterPick.current = false;
-    chosen.current?.querySelector<HTMLButtonElement>('button:last-child')?.focus({ preventScroll: true });
-  }, [picked]);
-
-  const matches = matchRecipes(picked, confirmed);
-  const suggestion = matches.complete[idea % (matches.complete.length || 1)];
-  const almost = matches.almost;
-  const choices = confirmationChoices(picked);
-  const searching = query.trim().length > 0;
-  const visible = searching ? searchIngredients(query) : quick;
-
-  useEffect(() => {
-    if (!focusAfterConfirm.current || !suggestion) return;
-    focusAfterConfirm.current = false;
-    heading.current?.focus();
-  }, [suggestion]);
-
-  function go(next: Screen) {
-    history.pushState({ ...history.state, zuerst: next }, '');
-    setQuery('');
-    setScreen(next);
+  useEffect(()=>{
+    try { const saved=localStorage.getItem('zuerst-journal'); if(saved) setState(parseJournal(JSON.parse(saved))); } catch { setNotice('Deine gespeicherten Daten konnten nicht gelesen werden. Importiere eine Sicherung im Profil.'); }
+    const initialTab=new URLSearchParams(location.search).get('tab'); if(initialTab==='history'||initialTab==='profile') setTab(initialTab);
+    setLoaded(true);
+    authRequest('get-session').then(data=>setAccount(data?.user??null)).catch(()=>{});
+  },[]);
+  useEffect(()=>{ if(loaded) {try {localStorage.setItem('zuerst-journal',JSON.stringify(state));} catch {setNotice('Der Gerätespeicher ist voll. Exportiere eine Sicherung im Profil.');}} },[state,loaded]);
+  useEffect(()=>{if(notice){const timer=setTimeout(()=>setNotice(''),6500);return()=>clearTimeout(timer);}},[notice]);
+  useEffect(()=>{if(detail||bon||restore)modal.current?.showModal(); else modal.current?.close();},[detail,bon,restore]);
+  function navigate(next:Tab) {setTab(next);setQuery('');setFilter('all');window.scrollTo(0,0);requestAnimationFrame(()=>heading.current?.focus());}
+  function closeModal(){setDetail(undefined);setBon(false);setBonText('');setReview(null);setRestore(undefined);}
+  function addStock(id:Ingredient){setState(s=>({...s,stock:[...new Set([...s.stock,id])]}));setQuery('');setNotice(`${label(id)} ergänzt`);}
+  function toggleFavorite(id:string){setState(s=>({...s,favorites:s.favorites.includes(id)?s.favorites.filter(x=>x!==id):[...s.favorites,id]}));}
+  function readBon(){
+    const normalize=(s:string)=>s.toLowerCase().replaceAll('ß','ss').normalize('NFD').replace(/\p{M}/gu,'').replace(/[^a-z0-9]+/g,' ').trim();
+    const found=bonText.slice(0,20000).split('\n').flatMap(line=>{
+      const text=' '+normalize(line)+' ';
+      if(/\b(summe|rabatt|gesamt|mwst|chips|sosse|sauce|pulver|getrank|saft)\b/.test(text))return [];
+      const hits=Object.entries(ingredients).filter(([id,names])=>!['rice','water'].includes(id)&&names.some(name=>{const alias=normalize(name.split(' (')[0]);return alias.length>=3&&text.includes(' '+alias+' ');}));
+      return hits.length===1?[hits[0][0] as Ingredient]:[];
+    });setReview([...new Set(found)]);
   }
+  async function action(work:()=>Promise<void>){setBusy(true);setNotice('');try{await work();}catch(error){setNotice(error instanceof Error?error.message:'Bitte prüfe deine Verbindung und versuche es erneut.');}finally{setBusy(false);}}
+  function exportFile(){const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download=`zuerst-${dayKey()}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  async function importFile(file?:File){if(!file)return;try{if(file.size>1000000)throw new Error('Die Datei ist zu groß. Maximal 1 MB.');setRestore(parseJournal(JSON.parse(await file.text())));}catch(error){setNotice(error instanceof Error?error.message:'Die Datei konnte nicht gelesen werden.');}}
+  const searchResults = recipes.filter(r=>(!query||r.name.toLocaleLowerCase('de').includes(query.toLocaleLowerCase('de'))||r.items.some(([id])=>label(id).toLocaleLowerCase('de').includes(query.toLocaleLowerCase('de'))))&&(filter!=='favorites'||state.favorites.includes(r.id))&&(filter!=='ready'||missing(r,state).length===0)&&(filter!=='veggie'||!r.items.some(([id])=>id==='tuna'))&&(filter!=='fast'||r.minutes<=10));
 
-  function back() {
-    history.back();
-  }
+  function recipeRow(recipe:Recipe){const absent=missing(recipe,state);return <div className="j-recipe-row" key={recipe.id}><button className="j-row-main" onClick={()=>setDetail(recipe)}><span className={`j-recipe-icon ${absent.length?'':'is-ready'}`}><Utensils size={21}/></span><span><strong>{recipe.name}</strong><small>{recipe.minutes} Min. · {absent.length ? `${absent.length} Zutaten fehlen`:'Alles im Vorrat'}</small></span><ChevronRight size={18}/></button><button className="j-icon" aria-label={`${recipe.name} ${state.favorites.includes(recipe.id)?'entmerken':'merken'}`} aria-pressed={state.favorites.includes(recipe.id)} onClick={()=>toggleFavorite(recipe.id)}><Heart size={21} fill={state.favorites.includes(recipe.id)?'currentColor':'none'}/></button></div>;}
 
-  function changeSelection() {
-    history.go(-screens.indexOf(screen));
-  }
-
-  function togglePicked(id: Ingredient, moveFocus = false) {
-    if (picked.includes(id)) {
-      setPicked(picked.filter((item) => item !== id));
-      setConfirmed(confirmed.filter((item) => item !== id));
-    } else if (picked.length < 3) {
-      focusAfterPick.current = moveFocus;
-      setPicked([...picked, id]);
-      setQuery('');
-    }
-    setIdea(0);
-  }
-
-  function submitSearch(event: FormEvent) {
-    event.preventDefault();
-    const first = visible.find((id) => !picked.includes(id));
-    if (searching && first && picked.length < 3) togglePicked(first, true);
-  }
-
-  function toggleConfirmed(id: Ingredient) {
-    setConfirmed((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-    setIdea(0);
-  }
-
-  function confirmMissing(id: Ingredient) {
-    focusAfterConfirm.current = true;
-    setConfirmed((current) => [...current, id]);
-    setIdea(0);
-  }
-
-  return <div className="shell">
-    <header className="topbar">
-      <div className="brand" aria-label="Zuerst"><img src="/icon.svg" width="42" height="42" alt="" /><span>Zuerst<span className="brand-dot">.</span></span></div>
-      <div className="flex items-center gap-1 sm:gap-2">
-        {androidApk && <a className="apk-link inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-3 sm:px-4" href={androidApk} download="zuerst-android.apk" aria-label="Android-App herunterladen (APK)">
-          <Download size={17} aria-hidden="true" /><span>Android<span className="hidden sm:inline">-App</span></span>
-        </a>}
-        <button type="button" className="info-button" aria-label="Über Zuerst" onClick={() => dialog.current?.showModal()}><Info size={18} aria-hidden="true" /><span className={androidApk ? 'hidden sm:inline' : undefined}>Über Zuerst</span></button>
-      </div>
-    </header>
-
-    <main>
-      {screen === 'pick' ? <section className="hero" aria-labelledby="start-title">
-        <div className="hero-copy">
-          <h1 id="start-title" ref={heading} tabIndex={-1}>Was möchtest du <em>aufbrauchen?</em></h1>
-          <p>Ein Gericht aus deinen Zutaten. In höchstens 20 Minuten.</p>
-        </div>
-        <img className="hero-art" src="/kitchen.svg" alt="" width="510" height="350" fetchPriority="high" />
-      </section> : <div className="backbar">
-        <button type="button" className="text-button" onClick={back}><ArrowLeft size={19} aria-hidden="true" />{screen === 'confirm' ? 'Zur Auswahl' : screen === 'result' ? 'Zur Bestätigung' : 'Zur Empfehlung'}</button>
-        <Steps screen={screen} />
+  return <div className="journal-app">
+    <header className="j-topbar"><a href="/" className="j-brand"><img src="/icon.svg" alt="" width="34" height="34"/>Zuerst<span>.</span></a><div className="j-top-actions">{process.env.NEXT_PUBLIC_ZUERST_APK&&<a href={process.env.NEXT_PUBLIC_ZUERST_APK} className="j-icon" aria-label="Android-App herunterladen" download="zuerst-android.apk"><Download size={20}/></a>}<button className={`j-avatar ${tab==='profile'?'selected':''}`} aria-label="Profil und Sicherung" onClick={()=>navigate('profile')}>{state.name?state.name[0].toLocaleUpperCase('de'):<UserRound size={21}/>}</button></div></header>
+    <nav className="j-nav" aria-label="Hauptnavigation">{tabs.map(item=><button key={item.id} aria-current={tab===item.id?'page':undefined} onClick={()=>navigate(item.id)}><span><item.icon size={22}/></span>{item.title}</button>)}</nav>
+    <main className="j-main"><div className="j-page-title"><h1 ref={heading} tabIndex={-1}>{tab==='profile'?'Dein Zuerst':tabs.find(t=>t.id===tab)?.title}</h1>{tab==='today'&&<span className="j-date">{dateLabel(dayKey())}</span>}</div>
+      {!loaded ? <div className="j-skeleton" aria-label="Dein Journal wird geladen"/> : <>
+      {tab==='today'&&<div className="j-dashboard">
+        <Panel className="j-feature"><div className="j-feature-heading"><span className="j-orb"><Leaf size={35} strokeWidth={1.6}/></span><span className="j-tag">Deine Küche. Dein Rhythmus.</span></div><h2>{state.name?`Was kochen wir, ${state.name}?`:'Etwas Gutes aus dem, was da ist.'}</h2><p>{ready[0]?`${ready[0].name} ist in ${ready[0].minutes} Minuten fertig. Du hast alle Zutaten da.`:'Eine Zutat reicht. Finde in wenigen Schritten dein nächstes Gericht.'}</p><a className="j-primary" href={ready[0]?`/kochen/?recipe=${ready[0].id}`:'/kochen/'}>Kochen starten <ArrowUpRight size={21}/></a></Panel>
+        <div className="j-metrics"><button className="j-metric mint" onClick={()=>navigate('stock')}><ShoppingBasket size={22}/><span>Im Vorrat</span><strong>{state.stock.length}<small>Zutaten</small></strong><ChevronRight size={17}/></button><button className="j-metric lavender" onClick={()=>navigate('history')}><ChartNoAxesColumn size={22}/><span>Selbst gekocht</span><strong>{count}<small>letzte 7 Tage</small></strong><ChevronRight size={17}/></button></div>
+        {soon.length>0&&<Panel><div className="j-section-title"><h2>Zuerst aufbrauchen</h2><span className="j-count">{soon.length}</span></div><p className="j-muted">Nach deinen eingetragenen Daten.</p><div className="j-chips">{soon.map(id=><a href={`/kochen/?recipe=${recipes.find(r=>r.items.some(([x])=>x===id))?.id??''}`} key={id}>{label(id)} · {dateLabel(state.expiry[id]!,true)}</a>)}</div><small>Das Datum ist ein Hinweis. Prüfe Lebensmittel vor dem Verwenden.</small></Panel>}
+        <Panel className="j-today-plan"><div className="j-section-title"><h2>Heute auf dem Plan</h2><CalendarDays size={22}/></div>{todayPlan?<>{recipeRow(todayPlan)}<button className="j-link" onClick={()=>{navigate('plan');setShopping(false);}}>Plan ansehen <ChevronRight size={17}/></button></>:<><p>Ein kleiner Plan macht den nächsten Einkauf leichter.</p><button className="j-secondary" onClick={()=>{navigate('plan');setShopping(false);}}>Gericht einplanen <Plus size={18}/></button></>}</Panel>
+        <Panel className="j-receipt-promo"><ReceiptText size={28}/><div><h2>Dein Einkauf, schon im Blick.</h2><p>Übernimm Zutaten aus einem Kassenbon in deinen Vorrat.</p></div><button className="j-secondary" onClick={()=>setBon(true)}>Bon erfassen <Plus size={18}/></button></Panel>
+        {ready.length>0&&<Panel><div className="j-section-title"><h2>Du kannst direkt loslegen</h2><span className="j-count">{ready.length}</span></div>{ready.slice(0,3).map(recipeRow)}</Panel>}
       </div>}
-
-      {screen === 'pick' && <section className="workbench">
-        <div className="bench-top"><h2>Deine Zutaten</h2><Steps screen={screen} /></div>
-        <div className="pick-grid">
-          <div className="picker">
-            <form className="search" role="search" onSubmit={submitSearch}>
-              <Search size={22} aria-hidden="true" />
-              <label className="sr-only" htmlFor="ingredient-search">Zutat suchen</label>
-              <input id="ingredient-search" ref={search} type="search" autoComplete="off" placeholder="Zutat suchen …" value={query} onChange={(event) => setQuery(event.target.value)} />
-              {searching && <button className="clear" type="button" aria-label="Suche leeren" onClick={() => { setQuery(''); search.current?.focus(); }}><X size={19} aria-hidden="true" /></button>}
-            </form>
-            <div className="option-heading" aria-live="polite">{searching ? `${visible.length} Treffer` : 'Schnellwahl'}</div>
-            {visible.length ? <div className="pills" aria-label={searching ? 'Suchergebnisse' : 'Schnellwahl'} role="group">
-              {visible.map((id) => <button type="button" key={id} className="pill" aria-pressed={picked.includes(id)} disabled={picked.length === 3 && !picked.includes(id)} onClick={() => togglePicked(id, searching && !picked.includes(id))}>
-                <IngredientArt id={id} />{label(id)}{picked.includes(id) && <Check className="pill-check" size={15} aria-hidden="true" />}
-              </button>)}
-            </div> : <p className="small muted search-empty">Diese Zutat ist noch nicht im Katalog. Versuch es mit einem anderen Begriff.</p>}
-          </div>
-          <aside className="selection" aria-label="Deine Auswahl">
-            <div className="selection-header"><span>Ausgewählt</span><span className="counter" aria-live="polite">{picked.length} / 3</span></div>
-            {picked.length ? <div className="chosen" ref={chosen}>{picked.map((id, index) => <button type="button" key={id} className="chosen-pill" onClick={() => { togglePicked(id); search.current?.focus({ preventScroll: true }); }} aria-label={`${label(id)} entfernen${index === 0 ? ', erste Zutat' : ''}`}>
-              {index === 0 && <span className="first-marker" aria-hidden="true">1</span>}{label(id)}<X size={16} aria-hidden="true" />
-            </button>)}</div> : <div className="empty-selection"><Plus size={18} aria-hidden="true" /><span>Wähle deine erste Zutat.</span></div>}
-            <p className="small muted">{picked.length === 3 ? 'Drei Zutaten ausgewählt.' : 'Eine reicht. Zwei weitere sind optional.'}</p>
-          </aside>
-        </div>
-        <div className="action-row"><Button onClick={() => go('confirm')} disabled={!picked.length}>Zutaten prüfen <ArrowRight size={20} aria-hidden="true" /></Button></div>
-      </section>}
-
-      {screen === 'confirm' && <section className="stage confirmation">
-        <div className="stage-intro">
-          <h1 ref={heading} tabIndex={-1}>Was hast du noch da?</h1>
-          <p>Bestätige nur, was du wirklich zur Hand hast.</p>
-          <div className="summary"><span>Aufbrauchen:</span>{picked.map((id) => <strong key={id}>{label(id)}</strong>)}</div>
-        </div>
-        <div className="confirmation-body">
-          {choices.length ? <div className="confirm-grid" role="group" aria-label="Weitere Zutaten bestätigen">
-            {choices.map((id) => <button type="button" key={id} className="confirm-option" aria-pressed={confirmed.includes(id)} onClick={() => toggleConfirmed(id)}>
-              <IngredientArt id={id} /><span className="confirm-name">{label(id)}{pantry.has(id) && <small>Grundzutat</small>}</span><span className="checkbox" aria-hidden="true">{confirmed.includes(id) && <Check size={16} />}</span>
-            </button>)}
-          </div> : <p>Für deine Auswahl gibt es keine weiteren Zutaten zu prüfen.</p>}
-          <div className="action-row"><Button onClick={() => go('result')}>Gericht finden <ArrowRight size={20} aria-hidden="true" /></Button></div>
-        </div>
-      </section>}
-
-      {screen === 'result' && (suggestion ? <section className="stage result" aria-labelledby="recommendation-title">
-        <div className="result-main">
-          <div className="recipe-label"><Utensils size={17} aria-hidden="true" /> Deine Empfehlung</div>
-          <h1 id="recommendation-title" ref={heading} tabIndex={-1} aria-live="polite">{suggestion.recipe.name}</h1>
-          <p>{suggestion.recipe.note}</p>
-          <div className="time"><Clock size={18} aria-hidden="true" /> {suggestion.recipe.minutes} Min.</div>
-          <div className="summary"><span>Du verbrauchst:</span>{suggestion.used.map((id) => <strong key={id}>{label(id)}</strong>)}</div>
-        </div>
-        <div className="recipe-visual" aria-hidden="true"><div className="plate"><IngredientArt id={suggestion.used[0]} /></div></div>
-        <div className="result-actions">
-          <Button onClick={() => go('cook')}>Jetzt kochen <ArrowRight size={20} aria-hidden="true" /></Button>
-          {matches.complete.length > 1 && <button type="button" className="text-button alternate" onClick={() => setIdea((index) => (index + 1) % matches.complete.length)}><RotateCw size={18} aria-hidden="true" /> Andere Idee</button>}
-        </div>
-      </section> : <section className="stage feedback">
-        {almost ? <>
-          <div className="feedback-art"><IngredientArt id={almost.missing[0]} /></div>
-          <h1 ref={heading} tabIndex={-1}>Eine Zutat fehlt noch.</h1>
-          <p>Hast du <strong>{label(almost.missing[0])}</strong> da? Dann kannst du <strong>{almost.recipe.name}</strong> in {almost.recipe.minutes} Min. machen.</p>
-          <div className="feedback-actions"><Button onClick={() => confirmMissing(almost.missing[0])}>{label(almost.missing[0])} bestätigen <Check size={20} aria-hidden="true" /></Button>
-            <button className="text-button" type="button" onClick={changeSelection}>Auswahl ändern</button></div>
-        </> : <>
-          <div className="feedback-art"><Search size={30} aria-hidden="true" /></div>
-          <h1 ref={heading} tabIndex={-1}>Noch kein passendes Gericht.</h1>
-          <p>Zuerst findet mit {label(picked[0])} und den bestätigten Zutaten kein Rezept. Wähle eine andere erste Zutat oder ergänze, was noch da ist.</p>
-          <div className="feedback-actions"><Button onClick={changeSelection}>Auswahl ändern <ArrowRight size={20} aria-hidden="true" /></Button></div>
-        </>}
-      </section>)}
-
-      {screen === 'cook' && suggestion && <article className="stage cook">
-        <div className="stage-intro">
-          <h1 ref={heading} tabIndex={-1}>{suggestion.recipe.name}</h1>
-          <div className="cook-meta"><span><Clock size={18} aria-hidden="true" /> {suggestion.recipe.minutes} Min.</span><span><Users size={18} aria-hidden="true" /> 2 Portionen</span></div>
-        </div>
-        <RecipeDetail recipe={suggestion.recipe} />
-      </article>}
+      {tab==='recipes'&&<><p className="j-lead">24 Ideen. Zwei Portionen. Höchstens 20 Minuten.</p><label className="j-search"><Search size={21}/><input type="search" placeholder="Gericht oder Zutat suchen" aria-label="Rezepte durchsuchen" value={query} onChange={e=>setQuery(e.target.value)}/></label><div className="j-chips j-filter" role="group" aria-label="Rezepte filtern">{[['all','Alle'],['favorites','Gemerkt'],['ready','Aus Vorrat'],['veggie','Vegetarisch'],['fast','Bis 10 Min.']].map(([id,title])=><button key={id} aria-pressed={filter===id} onClick={()=>setFilter(id)}>{title}</button>)}</div><Panel><div className="j-section-title"><h2>{filter==='favorites'?'Deine Sammlung':'Deine Rezepte'}</h2><span className="j-count">{searchResults.length}</span></div>{searchResults.map(recipeRow)}{!searchResults.length&&<p className="j-empty">{filter==='favorites'?'Tippe bei einem Rezept auf das Herz, um es hier zu merken.':'Kein passendes Rezept. Ändere die Suche oder den Filter.'}</p>}</Panel></>}
+      {tab==='stock'&&<><p className="j-lead">Was du zu Hause hast, macht den Anfang.</p><button className="j-primary" onClick={()=>setBon(true)}>Bon erfassen <ReceiptText size={20}/></button><Panel><h2>Zutat ergänzen</h2><label className="j-search"><Search size={20}/><input type="search" aria-label="Zutat suchen" placeholder="Zutat suchen" value={query} onChange={e=>setQuery(e.target.value)}/></label>{query.trim()&&<div className="j-chips">{searchIngredients(query).filter(id=>!state.stock.includes(id)).map(id=><button key={id} onClick={()=>addStock(id)}><Plus size={16}/>{label(id)}</button>)}</div>}</Panel><Panel><div className="j-section-title"><h2>Im Vorrat</h2><span className="j-count">{state.stock.length}</span></div>{!state.stock.length&&<p className="j-empty">Füge deine ersten Zutaten einzeln oder über einen Bon hinzu. Grundzutaten wie Öl und Salz bestätigst du ebenfalls selbst.</p>}{[...state.stock].sort((a,b)=>label(a).localeCompare(label(b),'de')).map(id=><div className="j-stock-row" key={id}><div><strong>{label(id)}</strong><label><span className="sr-only">Aufbrauchen bis für {label(id)}</span><input type="date" aria-label={`Aufbrauchen bis für ${label(id)}`} value={state.expiry[id]??''} onChange={e=>setState(s=>({...s,expiry:{...s.expiry,[id]:e.target.value||undefined}}))}/><small>Aufbrauchen bis · optional</small></label></div><button className="j-icon" aria-label={`${label(id)} aus Vorrat entfernen`} onClick={()=>setState(s=>{const expiry={...s.expiry};delete expiry[id];return {...s,expiry,stock:s.stock.filter(x=>x!==id)};})}><X size={20}/></button></div>)}</Panel></>}
+      {tab==='plan'&&<><div className="j-segment" role="group" aria-label="Planungsansicht"><button aria-pressed={!shopping} onClick={()=>setShopping(false)}>Wochenplan</button><button aria-pressed={shopping} onClick={()=>setShopping(true)}>Einkauf <span>{state.shopping.length}</span></button></div>{shopping?<><p className="j-lead">Abhaken. Einkaufen. In den Vorrat übernehmen.</p><Panel><h2>Auf der Liste</h2><label className="j-search"><Search size={20}/><input type="search" aria-label="Einkaufszutat suchen" placeholder="Zutat ergänzen" value={query} onChange={e=>setQuery(e.target.value)}/></label>{query.trim()&&<div className="j-chips">{searchIngredients(query).filter(id=>!state.shopping.includes(id)).map(id=><button key={id} onClick={()=>{setState(s=>({...s,shopping:[...s.shopping,id]}));setQuery('');}}><Plus size={16}/>{label(id)}</button>)}</div>}{state.shopping.map(id=><div className="j-shopping-row" key={id}><label><input type="checkbox" checked={checked.includes(id)} onChange={()=>setChecked(c=>c.includes(id)?c.filter(x=>x!==id):[...c,id])}/><span>{label(id)}</span></label><button className="j-icon" aria-label={`${label(id)} von Einkaufsliste entfernen`} onClick={()=>{setState(s=>({...s,shopping:s.shopping.filter(x=>x!==id)}));setChecked(c=>c.filter(x=>x!==id));}}><X size={18}/></button></div>)}{!state.shopping.length&&<p className="j-empty">Deine Liste ist frei. Füge Zutaten hinzu oder übernimm fehlende Zutaten aus einem Rezept.</p>}</Panel>{checked.length>0&&<button className="j-primary" onClick={()=>{setState(s=>bought(s,checked));setNotice(`${checked.length} Zutaten im Vorrat ergänzt`);setChecked([]);}}>Gekauftes übernehmen · {checked.length}<Check size={20}/></button>}</>:<><p className="j-lead">Deine nächsten sieben Tage, ganz entspannt.</p><div className="j-week">{daysFromToday().map(day=>{const recipe=recipes.find(r=>state.plans.some(p=>p.day===day&&p.recipeId===r.id));return <Panel key={day}><div className="j-section-title"><h2>{day===dayKey()?'Heute':dateLabel(day,true)}</h2>{recipe&&<button className="j-icon" aria-label={`Plan für ${dateLabel(day)} entfernen`} onClick={()=>setState(s=>({...s,plans:s.plans.filter(p=>p.day!==day)}))}><X size={18}/></button>}</div>{recipe?<>{recipeRow(recipe)}<button className="j-link" onClick={()=>{setState(s=>addMissing(s,recipe));setShopping(true);setNotice('Fehlende Zutaten sind auf der Einkaufsliste.');}}>Fehlendes einkaufen <ShoppingBasket size={17}/></button></>:<button className="j-plan-add" onClick={()=>{setPlanDay(day);navigate('recipes');setNotice('Wähle ein Rezept und tippe auf „Einplanen“.');}}><Plus size={22}/>Gericht auswählen</button>}</Panel>;})}</div><button className="j-primary" disabled={!state.plans.some(p=>daysFromToday().includes(p.day))} onClick={()=>{setState(s=>s.plans.filter(p=>daysFromToday().includes(p.day)).reduce((current,p)=>{const recipe=recipes.find(r=>r.id===p.recipeId);return recipe?addMissing(current,recipe):current;},s));setShopping(true);setNotice('Fehlende Zutaten für die Woche ergänzt. Mengen prüfst du in den Rezepten.');}}>Wocheneinkauf erstellen <ShoppingBasket size={20}/></button></>}</>}
+      {tab==='history'&&<><p className="j-lead">Ein Blick auf das, was du selbst gekocht hast.</p><div className="j-history-grid"><Panel className="lavender"><h2>Gekocht · letzte 7 Tage</h2><div className="j-total">{count}<span>Gerichte</span></div><div className="j-chart" role="img" aria-label={counts.map(d=>`${dateLabel(d.day)}: ${d.count} Gerichte`).join(', ')}>{counts.map(d=><div key={d.day}><span style={{height:`${Math.max(3,d.count/Math.max(1,...counts.map(x=>x.count))*70)}px`}}/><small>{new Date(d.day+'T12:00').toLocaleDateString('de',{weekday:'short'})}</small></div>)}</div></Panel><Panel className="mint"><Leaf size={25}/><h2>Zutatenvielfalt</h2><div className="j-total">{variety(state)}<span>Zutaten</span></div><p>Verschiedene Zutaten in deinen eingetragenen Rezepten der letzten sieben Tage, ohne Grundzutaten.</p></Panel></div><Panel><h2>Deine Gerichte</h2>{state.meals.map(m=><div className="j-stock-row" key={m.id}><div><strong>{m.name}</strong><small>{dateLabel(m.day)}</small></div><button className="j-icon" aria-label={`${m.name} aus Verlauf entfernen`} onClick={()=>{if(confirm('Diesen Kocheintrag entfernen?'))setState(s=>({...s,meals:s.meals.filter(x=>x.id!==m.id)}));}}><X size={18}/></button></div>)}{!state.meals.length&&<p className="j-empty">Nach dem Kochen kannst du dein Gericht eintragen. Hier wächst dein persönliches Küchenjournal.</p>}</Panel></>}
+      {tab==='profile'&&<><Panel><div className="j-section-title"><h2>Ganz du</h2><UserRound size={23}/></div><label className="j-field">Dein Name<input maxLength={40} value={state.name} placeholder="Wie dürfen wir dich nennen?" onChange={e=>setState(s=>({...s,name:e.target.value}))}/></label><p className="j-muted">Der Name wird auf diesem Gerät gespeichert.</p></Panel><Panel><div className="j-section-title"><h2>Konto & Sicherung</h2><Cloud size={24}/></div>{account?<><p>Angemeldet als <strong>{account.email}</strong></p><p className="j-muted">Sichere Vorrat, Sammlung, Plan und Verlauf. Es wird nur übertragen, wenn du auf „Jetzt sichern“ tippst.</p><button className="j-primary" disabled={busy} onClick={()=>action(async()=>{await backupRequest('POST',state);setCloudDate(new Date().toLocaleString('de-DE'));setNotice('Deine Sicherung wurde gespeichert.');})}>Jetzt sichern <Upload size={19}/></button><button className="j-secondary" disabled={busy} onClick={()=>action(async()=>{const rows=await backupRequest('GET');if(!rows.length)throw new Error('Für dieses Konto ist noch keine Sicherung vorhanden.');setRestore(parseJournal(rows[0].payload));setCloudDate(new Date(rows[0].updated_at).toLocaleString('de-DE'));})}>Sicherung wiederherstellen <Download size={19}/></button>{cloudDate&&<small>Cloud-Sicherung: {cloudDate}</small>}<div className="j-split-actions"><button className="j-link" disabled={busy} onClick={()=>action(async()=>{await authRequest('sign-out',{});setAccount(null);setCloudDate('');setNotice('Abgemeldet. Deine lokalen Daten bleiben erhalten.');})}><LogOut size={16}/>Abmelden</button><button className="j-link" disabled={busy} onClick={()=>{if(confirm('Deine Cloud-Sicherung endgültig löschen? Die lokalen Daten bleiben erhalten.'))void action(async()=>{await backupRequest('DELETE');setCloudDate('');setNotice('Cloud-Sicherung gelöscht.');});}}>Cloud-Sicherung löschen</button></div></>:<><p className="j-muted">Freiwillig. Dein Küchenjournal funktioniert auch ohne Anmeldung. Mit einem Konto kannst du es sichern und auf einem anderen Gerät wiederherstellen.</p><div className="j-segment"><button aria-pressed={authMode==='login'} onClick={()=>setAuthMode('login')}>Anmelden</button><button aria-pressed={authMode==='register'} onClick={()=>setAuthMode('register')}>Konto erstellen</button></div><form className="j-form" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);void action(async()=>{await authRequest(authMode==='login'?'sign-in/email':'sign-up/email',{email:String(form.get('email')).trim(),password:String(form.get('password')),...(authMode==='register'?{name:state.name.trim()||'Zuerst'}:{})});const session=await authRequest('get-session');if(!session?.user)throw new Error('Bitte erlaube Cookies für die Anmeldung und versuche es erneut.');setAccount(session.user);setNotice('Du bist angemeldet. Deine Daten bleiben lokal, bis du sie sicherst.');});}}><label className="j-field">E-Mail<input type="email" name="email" required autoComplete="email" maxLength={254}/></label><label className="j-field">Passwort<input type="password" name="password" required minLength={8} maxLength={128} autoComplete={authMode==='register'?'new-password':'current-password'}/></label><button className="j-primary" disabled={busy}>{busy?'Einen Moment …':authMode==='login'?'Anmelden':'Konto erstellen'}<ArrowUpRight size={19}/></button><button type="button" className="j-link" disabled={busy} onClick={e=>{const form=e.currentTarget.form;const email=form?.querySelector<HTMLInputElement>('input[type=email]');if(!email?.reportValidity()||!email.value)return;void action(async()=>{await authRequest('request-password-reset',{email:email.value,redirectTo:'https://zuerst.vercel.app/reset/'});setNotice('Falls ein Konto besteht, erhältst du eine E-Mail zum Zurücksetzen.');});}}>Passwort vergessen?</button></form></>}</Panel><Panel><h2>Deine Daten gehören dir</h2><p className="j-muted">Sichere dein Journal als Datei. Beim Import entscheidest du, ob die lokalen Daten ersetzt werden.</p><div className="j-split-actions"><button className="j-secondary" onClick={exportFile}><Download size={18}/>Exportieren</button><label className="j-secondary j-file"><Upload size={18}/>Importieren<input type="file" accept="application/json,.json" onChange={e=>{void importFile(e.target.files?.[0]);e.target.value='';}}/></label></div></Panel><Panel><h2>Über Zuerst</h2><p>Dein Begleiter für Einkauf, Vorrat und selbst gekochte Gerichte. 24 vollständige Rezepte, lokale Bonerkennung in den nativen Apps und ein ruhiger Blick auf deine Kochwoche.</p><p className="j-muted">Eine Marke von Odkaz Labs. Version 1.2.0.</p><a className="j-link" href="https://github.com/Myria-Jr/zuerst">Quellcode auf GitHub <ArrowUpRight size={17}/></a></Panel></>}
+      </>}
     </main>
-
-    <footer className="footer"><span>Aus Resten wird Essen.</span><span>{recipes.length} Rezepte · Ohne Konto</span></footer>
-    <dialog ref={dialog} className="about" aria-labelledby="about-title" onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
-      <div className="about-content">
-        <button type="button" className="close" aria-label="Info schließen" onClick={() => dialog.current?.close()}><X size={22} aria-hidden="true" /></button>
-        <img src="/icon.svg" width="46" height="46" alt="" />
-        <h2 id="about-title">Über Zuerst</h2>
-        <p>Zuerst hilft dir, aus vorhandenen Zutaten ein schnelles Gericht zu machen. Die {recipes.length} Rezepte sind in der App gespeichert. Deine Auswahl bleibt auf diesem Gerät und wird beim Schließen verworfen.</p>
-        {androidApk && <p><a className="download-text" href={androidApk} download="zuerst-android.apk">Android-App herunterladen (APK)</a>. Öffne die Datei auf deinem Android-Gerät, um Zuerst zu installieren.</p>}
-        <p className="about-credit">Eine Marke von Odkaz Labs.</p>
-      </div>
-    </dialog>
+    {notice&&<div className="j-toast" role="status"><span>{notice}</span><button className="j-icon" aria-label="Hinweis schließen" onClick={()=>setNotice('')}><X size={18}/></button></div>}
+    <dialog ref={modal} className="j-dialog" onCancel={closeModal} onClose={closeModal} onClick={e=>{if(e.target===e.currentTarget)closeModal();}}><div className="j-dialog-content"><button className="j-icon j-dialog-close" aria-label="Schließen" onClick={closeModal}><X size={22}/></button>
+      {detail&&<><span className="j-dialog-symbol"><Utensils size={28}/></span><h2>{detail.name}</h2><div className="j-detail-meta"><Clock3 size={18}/>{detail.minutes} Min. · 2 Portionen</div><p>{detail.note}</p><h3>Das brauchst du</h3><dl className="j-amounts">{detail.items.map(([id,amount])=><div key={id}><dt>{label(id)}{state.stock.includes(id)&&<Check size={15} aria-label="Im Vorrat"/>}</dt><dd>{amount}</dd></div>)}</dl><a className="j-primary" href={`/kochen/?recipe=${detail.id}`}>Zutaten prüfen & kochen <ArrowUpRight size={19}/></a><button className="j-secondary" disabled={!missing(detail,state).length} onClick={()=>{setState(s=>addMissing(s,detail));setNotice('Fehlende Zutaten ergänzt. Mengen findest du im Rezept.');}}><ShoppingBasket size={19}/>{missing(detail,state).length?'Fehlendes auf die Liste':'Alles im Vorrat'}</button><label className="j-field">Für welchen Tag?<input type="date" value={planDay} min={dayKey()} max={daysFromToday(366)[365]} onChange={e=>setPlanDay(e.target.value)}/></label><button className="j-secondary" disabled={!planDay||planDay<dayKey()} onClick={()=>{setState(s=>({...s,plans:[...s.plans.filter(p=>p.day!==planDay),{day:planDay,recipeId:detail.id}]}));closeModal();navigate('plan');setShopping(false);setNotice('Gericht eingeplant.');}}><CalendarDays size={19}/>Einplanen</button></>}
+      {bon&&<><ReceiptText size={30}/><h2>Vom Bon in den Vorrat</h2><p>Füge den Text deines Kassenbons ein. In der Android- und iOS-App kannst du auch ein Foto aufnehmen oder auswählen.</p>{review===null?<><label className="j-field">Bontext<textarea rows={7} maxLength={20000} placeholder={'PAPRIKA ROT 1,29\nBIO EIER 2,49'} value={bonText} onChange={e=>setBonText(e.target.value)}/></label><button className="j-primary" disabled={!bonText.trim()} onClick={readBon}>Zutaten erkennen <Search size={19}/></button></>:<><h3>Bitte prüfen</h3>{review.length?<div className="j-chips">{review.map(id=><button key={id} aria-label={`${label(id)} nicht übernehmen`} onClick={()=>setReview(r=>r!.filter(x=>x!==id))}>{label(id)}<X size={16}/></button>)}</div>:<p>Keine weitere bekannte Zutat erkannt. Ergänze sie nach dem Schließen über die Vorratssuche.</p>}<button className="j-primary" disabled={!review.length} onClick={()=>{setState(s=>({...s,stock:[...new Set([...s.stock,...review])]}));closeModal();navigate('stock');setNotice('Bestätigte Zutaten ergänzt. Der Bontext wurde verworfen.');}}>In Vorrat übernehmen <Check size={19}/></button><button className="j-link" onClick={()=>setReview(null)}>Bontext ändern</button></>}</>}
+      {restore&&<><Download size={29}/><h2>Sicherung wiederherstellen?</h2><p>Du übernimmst {restore.stock.length} Vorratszutaten, {restore.meals.length} Kocheinträge und {restore.plans.length} geplante Gerichte. Deine aktuellen lokalen Daten werden ersetzt.</p><p className="j-muted">Exportiere vorher eine Datei, wenn du den aktuellen Stand behalten möchtest.</p><button className="j-primary" onClick={()=>{setState(restore);setChecked([]);closeModal();setNotice('Sicherung wiederhergestellt.');}}>Lokale Daten ersetzen <Check size={19}/></button><button className="j-secondary" onClick={exportFile}>Aktuellen Stand exportieren</button></>}
+    </div></dialog>
   </div>;
 }

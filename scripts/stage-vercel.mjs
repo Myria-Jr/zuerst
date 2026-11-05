@@ -23,5 +23,6 @@ const routes = headers.map(({ source, headers: values }) => ({
   headers: Object.fromEntries(values.map(({ key, value }) => [key, value])),
   continue: true,
 }));
+routes.unshift({ src: '^/api/auth/(.*)$', dest: 'https://ep-rapid-tooth-bav9j8t9.neonauth.c-8.eu-central-1.aws.neon.tech/zuerst/auth/$1', headers: { 'Cache-Control': 'private, no-store' } });
 routes.push({ src: '^/$', dest: '/index.html' }, { handle: 'filesystem' }, { src: '/.*', status: 404, dest: '/404.html' });
 await writeFile(join(destination, 'config.json'), JSON.stringify({ version: 3, routes }, null, 2) + '\n');
