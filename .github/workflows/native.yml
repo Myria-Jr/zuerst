@@ -37,4 +37,24 @@ jobs:
       - name: Build iOS simulator app
         run: >-
           xcodebuild -project ios/Zuerst.xcodeproj -scheme Zuerst
-          -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath "$RUNNER_TEMP/zuerst-build" CODE_SIGNING_ALLOWED=NO build
+      - name: Launch iPhone and capture native screens
+        shell: bash
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for v in d["devices"].values() for x in v if x["name"].startswith("iPhone")))')
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl install "$DEVICE" "$RUNNER_TEMP/zuerst-build/Build/Products/Debug-iphonesimulator/Zuerst.app"
+          xcrun simctl launch "$DEVICE" labs.odkaz.zuerst
+          sleep 3
+          mkdir -p "$RUNNER_TEMP/zuerst-screens"
+          xcrun simctl io "$DEVICE" screenshot "$RUNNER_TEMP/zuerst-screens/iphone-light.png"
+          xcrun simctl ui "$DEVICE" appearance dark
+          xcrun simctl ui "$DEVICE" content_size accessibility-large
+          sleep 2
+          xcrun simctl io "$DEVICE" screenshot "$RUNNER_TEMP/zuerst-screens/iphone-dark-large.png"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: zuerst-iphone-screens
+          path: ${{ runner.temp }}/zuerst-screens/*.png

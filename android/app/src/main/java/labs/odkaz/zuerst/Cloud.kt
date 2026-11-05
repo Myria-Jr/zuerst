@@ -77,7 +77,7 @@ internal class Cloud(context: Context) {
                 })
             }
             if (jwt == null) connection.headerFields.filterKeys { it?.equals("Set-Cookie", true) == true }.values.flatten()
-                .map { it.substringBefore(';') }.firstOrNull { it.startsWith("__Secure-neonauth.session_token=") && it.substringAfter('=').isNotBlank() }?.let(::saveCookie)
+                .map { it.substringBefore(';') }.firstOrNull { it.startsWith("__Secure-neon-auth.session_token=") && it.substringAfter('=').isNotBlank() }?.let(::saveCookie)
             return text
         } finally { connection.disconnect() }
     }
@@ -93,7 +93,7 @@ internal class Cloud(context: Context) {
         session() ?: error("Die Anmeldung konnte nicht abgeschlossen werden. Versuche es erneut.")
     }
     suspend fun signOut() = withContext(Dispatchers.IO) {
-        request("$auth/sign-out", "POST", JSONObject())
+        runCatching { request("$auth/sign-out", "POST", JSONObject()) }
         storage.edit().remove("cookie").apply()
     }
     suspend fun reset(email: String) = withContext(Dispatchers.IO) {

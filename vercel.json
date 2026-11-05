@@ -2,14 +2,25 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "out",
-  "rewrites": [{ "source": "/api/auth/:path*", "destination": "https://ep-rapid-tooth-bav9j8t9.neonauth.c-8.eu-central-1.aws.neon.tech/zuerst/auth/:path*" }],
+  "rewrites": [
+    {
+      "source": "/api/auth/:path*",
+      "destination": "https://ep-rapid-tooth-bav9j8t9.neonauth.c-8.eu-central-1.aws.neon.tech/zuerst/auth/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/downloads/zuerst-android.apk",
       "headers": [
-        {"key": "Content-Type", "value": "application/vnd.android.package-archive"},
-        {"key": "Content-Disposition", "value": "attachment; filename=\"zuerst-android.apk\""},
-        {"key": "Cache-Control", "value": "public, max-age=300"}
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"zuerst-android.apk\""
+        },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
       ]
     }
   ]

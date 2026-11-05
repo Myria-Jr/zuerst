@@ -51,7 +51,7 @@ final class CloudAccountStore: ObservableObject {
         }
         if jwt == nil {
             let headers = response.allHeaderFields.reduce(into: [String:String]()) { result,pair in if let key = pair.key as? String, let value = pair.value as? String { result[key] = value } }
-            if let cookie = HTTPCookie.cookies(withResponseHeaderFields: headers, for: target).first(where: { $0.name == "__Secure-neonauth.session_token" && !$0.value.isEmpty }) { try saveCookie("\(cookie.name)=\(cookie.value)") }
+            if let cookie = HTTPCookie.cookies(withResponseHeaderFields: headers, for: target).first(where: { $0.name == "__Secure-neon-auth.session_token" && !$0.value.isEmpty }) { try saveCookie("\(cookie.name)=\(cookie.value)") }
         }
         return data
     }
