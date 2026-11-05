@@ -25,6 +25,8 @@ E-Mail/Passwort-Anmeldung über Neon Auth (Managed Better Auth), eigene Neon-Dat
 
 Es gibt keine automatische Synchronisierung. „Jetzt sichern“ ersetzt die Cloud-Sicherung des angemeldeten Kontos. „Sicherung wiederherstellen“ zeigt eine Bestätigung vor dem Ersetzen der lokalen Daten. Bonfotos und Bontext werden nicht gesichert. Die Cloud-Sicherung kann im Profil gelöscht werden. Datei-Export und Kernfunktionen benötigen keinen Cloud-Dienst.
 
+Der Export bleibt eine eigenständige statische App. Auf Vercel ergänzt `api/auth.ts` den optionalen Auth-Proxy mit Origin-Prüfung und HttpOnly-Sitzungscookies. `scripts/stage-vercel.mjs` paketiert diese Funktion auch für Prebuilt-Deployments. Andere statische Hosts nutzen den Auth-Dienst direkt.
+
 Die öffentlichen Dienstadressen stehen in den Cloud-Modulen. Datenbank-Zugangsdaten und private Schlüssel gehören nie in App oder Repository. `backend/schema.sql` dokumentiert die bereits eingerichtete Tabelle mit nutzergebundener Row-Level Security. Für eigene Bereitstellungen Neon Auth und Data API aktivieren, das Schema auf einer neuen Datenbank anlegen, eigene Dienstadressen einsetzen und die HTTPS-Startadresse als vertrauenswürdige Origin freigeben.
 
 ## Native Apps

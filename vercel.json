@@ -1,11 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
+  "buildCommand": "node scripts/fetch-apk.mjs && npm run build",
   "outputDirectory": "out",
   "rewrites": [
     {
       "source": "/api/auth/:path*",
-      "destination": "https://ep-rapid-tooth-bav9j8t9.neonauth.c-8.eu-central-1.aws.neon.tech/zuerst/auth/:path*"
+      "destination": "/api/auth?path=:path*"
     }
   ],
   "headers": [
