@@ -1,0 +1,204 @@
+.w-stack > .j-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+.w-stack h2,
+.w-stack h3,
+.w-stack p {
+  margin: 0;
+}
+.w-stack h2 {
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
+.w-stack p {
+  line-height: 1.6;
+}
+.w-stack label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.5;
+}
+.w-stack .w-check {
+  flex-direction: row;
+  gap: 12px;
+  align-items: flex-start;
+}
+.w-stack .w-check input {
+  flex: none;
+}
+.w-stack :is(input:not([type="checkbox"]), textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 12px 14px;
+  font: inherit;
+  background: var(--card);
+  color: var(--text);
+  box-sizing: border-box;
+}
+.w-stack textarea {
+  resize: vertical;
+}
+.w-photo {
+  position: relative;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 24px;
+  min-height: 52px;
+  padding: 14px;
+  background: var(--card);
+  color: var(--text);
+  overflow: hidden;
+  cursor: pointer;
+}
+.w-photo input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.w-photo:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.w-portion {
+  padding-top: 20px;
+  border-top: 1px solid currentColor;
+}
+.w-total {
+  font-size: 2.5rem;
+  letter-spacing: -0.03em;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.w-total small {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.w-price-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.w-price-options button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  text-align: left;
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--soft);
+  color: var(--text);
+  min-height: 80px;
+  border: 2px solid transparent;
+}
+.w-price-options button strong {
+  font-size: 1.25rem;
+}
+.w-price-options button span {
+  grid-column: 1;
+  font-size: 0.9rem;
+}
+.w-price-options button svg {
+  grid-column: 2;
+  grid-row: 1/3;
+  align-self: center;
+}
+.w-price-options button[aria-checked="true"] {
+  border-color: var(--action);
+  background: var(--trend);
+  color: var(--on-trend);
+}
+.w-stack details {
+  padding: 12px 0;
+}
+.w-stack summary {
+  min-height: 48px;
+  display: list-item;
+  align-content: center;
+  cursor: pointer;
+  font-weight: 650;
+}
+.w-stack details[open] > summary {
+  margin-bottom: 12px;
+}
+.w-stack ol {
+  padding-left: 24px;
+  line-height: 1.65;
+}
+.w-stack ol li {
+  padding-bottom: 12px;
+}
+.w-feedback {
+  margin: 0;
+  position: relative;
+}
+.w-feedback span {
+  flex: 1;
+}
+.w-stack a {
+  text-underline-offset: 4px;
+}
+.w-stack .j-primary,
+.w-stack .j-secondary {
+  white-space: normal;
+  min-height: 48px;
+}
+.w-stack :disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.w-import-needs li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--stroke);
+}
+.w-import-needs small {
+  width: 100%;
+}
+.w-menu button span {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.w-menu button small {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 400;
+}
+.w-stack {
+  max-width: 900px;
+}
+.w-stack ::selection {
+  background: var(--trend);
+  color: var(--on-trend);
+}
+.w-stack input {
+  caret-color: var(--action);
+}
+.w-bars {
+  overflow: hidden;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+@media (min-width: 840px) {
+  .j-dashboard > .w-stack {
+    grid-column: 1/-1;
+  }
+  .w-price-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
