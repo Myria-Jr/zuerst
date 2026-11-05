@@ -1,6 +1,9 @@
 {
-  "version": "1.2.0",
-  "architectures": ["arm64-v8a", "armeabi-v7a"],
+  "version": "1.2.1",
+  "architectures": [
+    "arm64-v8a",
+    "armeabi-v7a"
+  ],
   "url": "https://zuerst-odkaz-labs.gauzykelp1.chatgpt.site/downloads/zuerst-android.apk",
-  "sha256": "2253f71d5b127bf27814836e24dcbce6f6b7f1058daf668bf9a01c5cde556ca8"
+  "sha256": "fe275c0d72b412badbfb2747428d7b60760cb46cc8335e4a197d35fefb034257"
 }
