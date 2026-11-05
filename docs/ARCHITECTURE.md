@@ -1,6 +1,6 @@
 # Gemeinsames Domänenmodell
 
-Stand: 1.2.1. Implementiert in `Domain.kt` und `lib/domain.ts`. Das bestehende Küchenjournal bleibt bei Format 2; Gesundheitsdaten werden nicht ungefragt in dessen Cloud-Sicherungen aufgenommen.
+Stand: 1.2.2. Implementiert in `Domain.kt` und `lib/domain.ts`. Das bestehende Küchenjournal bleibt bei Format 2; Gesundheitsdaten werden nicht ungefragt in dessen Cloud-Sicherungen aufgenommen.
 
 ```mermaid
 flowchart LR

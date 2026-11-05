@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.time.Instant
@@ -46,7 +47,7 @@ internal fun RecipeLibrary(catalog: Catalog, journal: Journal, open: (Recipe) ->
 internal fun RecipeRow(recipe: Recipe, journal: Journal, open: () -> Unit, favorite: () -> Unit) {
     val missing = journal.missing(recipe).size
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        TextButton(open, Modifier.weight(1f).heightIn(min = 68.dp), contentPadding = PaddingValues(horizontal = 0.dp, vertical = 10.dp)) {
+        TextButton(open, Modifier.weight(1f).heightIn(min = 68.dp), shape = RoundedCornerShape(12.dp), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)) {
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(recipe.name, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                 Text("${recipe.minutes} Min. · ${if (missing == 0) "Alles im Vorrat" else "$missing Zutaten fehlen"}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

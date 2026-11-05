@@ -15,7 +15,7 @@ npm run dev
 
 ## Küchenjournal 1.2
 
-Version 1.2.1 setzt den gewünschten Hellmodus auch bei dunkler Systemeinstellung durch. Die Android-Navigation verbindet Material-Komponenten mit einer schwebenden, transluzenten Glasfläche und tatsächlicher Hintergrundunschärfe auf unterstützten Geräten. Auf großen Breiten wird sie zur NavigationRail. Die Lizenz der Haze-Bibliothek liegt unter `shared/licenses/haze.txt` sowie `public/licenses/haze.txt`.
+Version 1.2.2 setzt den gewünschten Hellmodus auch bei dunkler Systemeinstellung durch. Die Android-Navigation verbindet Material-Komponenten mit einer schwebenden, transluzenten Glasfläche und tatsächlicher Hintergrundunschärfe auf unterstützten Geräten. Auf großen Breiten wird sie zur NavigationRail. Die Lizenz der Haze-Bibliothek liegt unter `shared/licenses/haze.txt` sowie `public/licenses/haze.txt`.
 
 Die gemeinsame Grundlage für Nährwerte, mengenbasierten Vorrat, Health-Connect-Tageswerte und überprüfbare Social-Rezeptentwürfe ist in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) beschrieben. Die Typen und Logik werden auf Android und im Web mit denselben Testvektoren geprüft. Diese Grundlage enthält noch keine aktivierte KI-Fotoanalyse oder Health-Connect-Anbindung.
 
