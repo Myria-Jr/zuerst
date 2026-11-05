@@ -1,0 +1,913 @@
+{
+  "version": 1,
+  "source": "USDA FoodData Central · SR Legacy, April 2018",
+  "sourceUrl": "https://fdc.nal.usda.gov/download-datasets/",
+  "foods": [
+    {
+      "id": "pasta-dry",
+      "name": "Nudeln, trocken",
+      "preparation": "raw",
+      "aliases": [
+        "pasta",
+        "spaghetti",
+        "nudeln"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 371,
+        "proteinG": 13,
+        "carbohydrateG": 74.7,
+        "fatG": 1.51,
+        "fibreG": 3.2
+      },
+      "fdcId": 168927,
+      "sourceDescription": "Pasta, dry, unenriched"
+    },
+    {
+      "id": "pasta-cooked",
+      "name": "Nudeln, gekocht · ohne Sauce",
+      "preparation": "cooked",
+      "aliases": [
+        "pasta",
+        "spaghetti",
+        "nudeln"
+      ],
+      "vision": [
+        "pasta",
+        "spaghetti",
+        "carbonara",
+        "noodle"
+      ],
+      "per100g": {
+        "energyKcal": 158,
+        "proteinG": 5.8,
+        "carbohydrateG": 30.9,
+        "fatG": 0.93,
+        "fibreG": 1.8
+      },
+      "fdcId": 168928,
+      "sourceDescription": "Pasta, cooked, unenriched, without added salt"
+    },
+    {
+      "id": "pasta-whole-dry",
+      "name": "Vollkornnudeln, trocken",
+      "preparation": "raw",
+      "aliases": [
+        "vollkorn",
+        "pasta"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 352,
+        "proteinG": 13.9,
+        "carbohydrateG": 73.4,
+        "fatG": 2.93,
+        "fibreG": 9.2
+      },
+      "fdcId": 169738,
+      "sourceDescription": "Pasta, whole-wheat, dry (Includes foods for USDA's Food Distribution Program)"
+    },
+    {
+      "id": "pasta-whole-cooked",
+      "name": "Vollkornnudeln, gekocht",
+      "preparation": "cooked",
+      "aliases": [
+        "vollkorn",
+        "pasta"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 149,
+        "proteinG": 5.99,
+        "carbohydrateG": 30.1,
+        "fatG": 1.71,
+        "fibreG": 3.9
+      },
+      "fdcId": 168910,
+      "sourceDescription": "Pasta, whole-wheat, cooked (Includes foods for USDA's Food Distribution Program)"
+    },
+    {
+      "id": "rice-dry",
+      "name": "Reis, trocken",
+      "preparation": "raw",
+      "aliases": [
+        "reis"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 365,
+        "proteinG": 7.13,
+        "carbohydrateG": 80,
+        "fatG": 0.66,
+        "fibreG": 1.3
+      },
+      "fdcId": 169756,
+      "sourceDescription": "Rice, white, long-grain, regular, raw, unenriched"
+    },
+    {
+      "id": "rice-cooked",
+      "name": "Reis, gekocht · ohne Zusätze",
+      "preparation": "cooked",
+      "aliases": [
+        "reis"
+      ],
+      "vision": [
+        "rice"
+      ],
+      "per100g": {
+        "energyKcal": 130,
+        "proteinG": 2.69,
+        "carbohydrateG": 28.2,
+        "fatG": 0.28,
+        "fibreG": 0.4
+      },
+      "fdcId": 169757,
+      "sourceDescription": "Rice, white, long-grain, regular, unenriched, cooked without salt"
+    },
+    {
+      "id": "oats",
+      "name": "Haferflocken, trocken",
+      "preparation": "raw",
+      "aliases": [
+        "hafer",
+        "porridge"
+      ],
+      "vision": [
+        "oat"
+      ],
+      "per100g": {
+        "energyKcal": 379,
+        "proteinG": 13.2,
+        "carbohydrateG": 67.7,
+        "fatG": 6.52,
+        "fibreG": 10.1
+      },
+      "fdcId": 173904,
+      "sourceDescription": "Cereals, oats, regular and quick, not fortified, dry"
+    },
+    {
+      "id": "porridge",
+      "name": "Porridge, mit Wasser gekocht",
+      "preparation": "cooked",
+      "aliases": [
+        "hafer",
+        "porridge"
+      ],
+      "vision": [
+        "porridge"
+      ],
+      "per100g": {
+        "energyKcal": 71,
+        "proteinG": 2.54,
+        "carbohydrateG": 12,
+        "fatG": 1.52,
+        "fibreG": 1.7
+      },
+      "fdcId": 173905,
+      "sourceDescription": "Cereals, oats, regular and quick, unenriched, cooked with water (includes boiling and microwaving), without salt"
+    },
+    {
+      "id": "couscous-dry",
+      "name": "Couscous, trocken",
+      "preparation": "raw",
+      "aliases": [
+        "couscous"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 376,
+        "proteinG": 12.8,
+        "carbohydrateG": 77.4,
+        "fatG": 0.64,
+        "fibreG": 5
+      },
+      "fdcId": 169699,
+      "sourceDescription": "Couscous, dry"
+    },
+    {
+      "id": "couscous-cooked",
+      "name": "Couscous, gekocht",
+      "preparation": "cooked",
+      "aliases": [
+        "couscous"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 112,
+        "proteinG": 3.79,
+        "carbohydrateG": 23.2,
+        "fatG": 0.16,
+        "fibreG": 1.4
+      },
+      "fdcId": 169700,
+      "sourceDescription": "Couscous, cooked"
+    },
+    {
+      "id": "bread",
+      "name": "Vollkornbrot",
+      "preparation": "unspecified",
+      "aliases": [
+        "brot",
+        "toast"
+      ],
+      "vision": [
+        "bread",
+        "toast"
+      ],
+      "per100g": {
+        "energyKcal": 252,
+        "proteinG": 12.4,
+        "carbohydrateG": 42.7,
+        "fatG": 3.5,
+        "fibreG": 6
+      },
+      "fdcId": 172688,
+      "sourceDescription": "Bread, whole-wheat, commercially prepared"
+    },
+    {
+      "id": "banana",
+      "name": "Banane, roh",
+      "preparation": "raw",
+      "aliases": [
+        "banane"
+      ],
+      "vision": [
+        "banana"
+      ],
+      "per100g": {
+        "energyKcal": 89,
+        "proteinG": 1.09,
+        "carbohydrateG": 22.8,
+        "fatG": 0.33,
+        "fibreG": 2.6
+      },
+      "fdcId": 173944,
+      "sourceDescription": "Bananas, raw"
+    },
+    {
+      "id": "apple",
+      "name": "Apfel, mit Schale",
+      "preparation": "raw",
+      "aliases": [
+        "apfel"
+      ],
+      "vision": [
+        "apple",
+        "granny smith"
+      ],
+      "per100g": {
+        "energyKcal": 52,
+        "proteinG": 0.26,
+        "carbohydrateG": 13.8,
+        "fatG": 0.17,
+        "fibreG": 2.4
+      },
+      "fdcId": 171688,
+      "sourceDescription": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)"
+    },
+    {
+      "id": "orange",
+      "name": "Orange, roh",
+      "preparation": "raw",
+      "aliases": [
+        "orange"
+      ],
+      "vision": [
+        "orange"
+      ],
+      "per100g": {
+        "energyKcal": 47,
+        "proteinG": 0.94,
+        "carbohydrateG": 11.8,
+        "fatG": 0.12,
+        "fibreG": 2.4
+      },
+      "fdcId": 169097,
+      "sourceDescription": "Oranges, raw, all commercial varieties"
+    },
+    {
+      "id": "strawberry",
+      "name": "Erdbeeren, roh",
+      "preparation": "raw",
+      "aliases": [
+        "erdbeere",
+        "beeren"
+      ],
+      "vision": [
+        "strawberry"
+      ],
+      "per100g": {
+        "energyKcal": 32,
+        "proteinG": 0.67,
+        "carbohydrateG": 7.68,
+        "fatG": 0.3,
+        "fibreG": 2
+      },
+      "fdcId": 167762,
+      "sourceDescription": "Strawberries, raw"
+    },
+    {
+      "id": "avocado",
+      "name": "Avocado, roh",
+      "preparation": "raw",
+      "aliases": [
+        "avocado"
+      ],
+      "vision": [
+        "avocado"
+      ],
+      "per100g": {
+        "energyKcal": 160,
+        "proteinG": 2,
+        "carbohydrateG": 8.53,
+        "fatG": 14.7,
+        "fibreG": 6.7
+      },
+      "fdcId": 171705,
+      "sourceDescription": "Avocados, raw, all commercial varieties"
+    },
+    {
+      "id": "broccoli",
+      "name": "Brokkoli, roh",
+      "preparation": "raw",
+      "aliases": [
+        "brokkoli"
+      ],
+      "vision": [
+        "broccoli"
+      ],
+      "per100g": {
+        "energyKcal": 34,
+        "proteinG": 2.82,
+        "carbohydrateG": 6.64,
+        "fatG": 0.37,
+        "fibreG": 2.6
+      },
+      "fdcId": 170379,
+      "sourceDescription": "Broccoli, raw"
+    },
+    {
+      "id": "carrot",
+      "name": "Karotte, roh",
+      "preparation": "raw",
+      "aliases": [
+        "karotte",
+        "mohre"
+      ],
+      "vision": [
+        "carrot"
+      ],
+      "per100g": {
+        "energyKcal": 41,
+        "proteinG": 0.93,
+        "carbohydrateG": 9.58,
+        "fatG": 0.24,
+        "fibreG": 2.8
+      },
+      "fdcId": 170393,
+      "sourceDescription": "Carrots, raw"
+    },
+    {
+      "id": "tomato",
+      "name": "Tomate, roh",
+      "preparation": "raw",
+      "aliases": [
+        "tomate"
+      ],
+      "vision": [
+        "tomato"
+      ],
+      "per100g": {
+        "energyKcal": 18,
+        "proteinG": 0.88,
+        "carbohydrateG": 3.89,
+        "fatG": 0.2,
+        "fibreG": 1.2
+      },
+      "fdcId": 170457,
+      "sourceDescription": "Tomatoes, red, ripe, raw, year round average"
+    },
+    {
+      "id": "pepper",
+      "name": "Paprika, rot, roh",
+      "preparation": "raw",
+      "aliases": [
+        "paprika"
+      ],
+      "vision": [
+        "bell pepper",
+        "pepper"
+      ],
+      "per100g": {
+        "energyKcal": 26,
+        "proteinG": 0.99,
+        "carbohydrateG": 6.03,
+        "fatG": 0.3,
+        "fibreG": 2.1
+      },
+      "fdcId": 170108,
+      "sourceDescription": "Peppers, sweet, red, raw"
+    },
+    {
+      "id": "cucumber",
+      "name": "Gurke, mit Schale",
+      "preparation": "raw",
+      "aliases": [
+        "gurke"
+      ],
+      "vision": [
+        "cucumber"
+      ],
+      "per100g": {
+        "energyKcal": 15,
+        "proteinG": 0.65,
+        "carbohydrateG": 3.63,
+        "fatG": 0.11,
+        "fibreG": 0.5
+      },
+      "fdcId": 168409,
+      "sourceDescription": "Cucumber, with peel, raw"
+    },
+    {
+      "id": "spinach",
+      "name": "Spinat, roh",
+      "preparation": "raw",
+      "aliases": [
+        "spinat"
+      ],
+      "vision": [
+        "spinach"
+      ],
+      "per100g": {
+        "energyKcal": 23,
+        "proteinG": 2.86,
+        "carbohydrateG": 3.63,
+        "fatG": 0.39,
+        "fibreG": 2.2
+      },
+      "fdcId": 168462,
+      "sourceDescription": "Spinach, raw"
+    },
+    {
+      "id": "potato-raw",
+      "name": "Kartoffeln, roh",
+      "preparation": "raw",
+      "aliases": [
+        "kartoffel"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 77,
+        "proteinG": 2.05,
+        "carbohydrateG": 17.5,
+        "fatG": 0.09,
+        "fibreG": 2.1
+      },
+      "fdcId": 170026,
+      "sourceDescription": "Potatoes, flesh and skin, raw"
+    },
+    {
+      "id": "potato-cooked",
+      "name": "Kartoffeln, gekocht · ohne Zusätze",
+      "preparation": "cooked",
+      "aliases": [
+        "kartoffel"
+      ],
+      "vision": [
+        "potato"
+      ],
+      "per100g": {
+        "energyKcal": 86,
+        "proteinG": 1.71,
+        "carbohydrateG": 20,
+        "fatG": 0.1,
+        "fibreG": 1.8
+      },
+      "fdcId": 170440,
+      "sourceDescription": "Potatoes, boiled, cooked without skin, flesh, without salt"
+    },
+    {
+      "id": "egg-raw",
+      "name": "Ei, roh",
+      "preparation": "raw",
+      "aliases": [
+        "ei",
+        "eier"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 143,
+        "proteinG": 12.6,
+        "carbohydrateG": 0.72,
+        "fatG": 9.51,
+        "fibreG": 0
+      },
+      "fdcId": 171287,
+      "sourceDescription": "Egg, whole, raw, fresh"
+    },
+    {
+      "id": "egg-cooked",
+      "name": "Ei, hart gekocht",
+      "preparation": "cooked",
+      "aliases": [
+        "ei",
+        "eier"
+      ],
+      "vision": [
+        "egg"
+      ],
+      "per100g": {
+        "energyKcal": 155,
+        "proteinG": 12.6,
+        "carbohydrateG": 1.12,
+        "fatG": 10.6,
+        "fibreG": 0
+      },
+      "fdcId": 173424,
+      "sourceDescription": "Egg, whole, cooked, hard-boiled"
+    },
+    {
+      "id": "milk",
+      "name": "Vollmilch, 3,25 % Fett",
+      "preparation": "unspecified",
+      "aliases": [
+        "milch"
+      ],
+      "vision": [
+        "milk"
+      ],
+      "per100g": {
+        "energyKcal": 61,
+        "proteinG": 3.15,
+        "carbohydrateG": 4.78,
+        "fatG": 3.27,
+        "fibreG": 0
+      },
+      "fdcId": 172217,
+      "sourceDescription": "Milk, whole, 3.25% milkfat, without added vitamin A and vitamin D"
+    },
+    {
+      "id": "yogurt",
+      "name": "Naturjoghurt, Vollmilch",
+      "preparation": "unspecified",
+      "aliases": [
+        "joghurt",
+        "yoghurt"
+      ],
+      "vision": [
+        "yogurt",
+        "yoghurt"
+      ],
+      "per100g": {
+        "energyKcal": 61,
+        "proteinG": 3.47,
+        "carbohydrateG": 4.66,
+        "fatG": 3.25,
+        "fibreG": 0
+      },
+      "fdcId": 171284,
+      "sourceDescription": "Yogurt, plain, whole milk"
+    },
+    {
+      "id": "cheddar",
+      "name": "Cheddar",
+      "preparation": "unspecified",
+      "aliases": [
+        "kase",
+        "cheddar"
+      ],
+      "vision": [
+        "cheese"
+      ],
+      "per100g": {
+        "energyKcal": 403,
+        "proteinG": 22.9,
+        "carbohydrateG": 3.37,
+        "fatG": 33.3,
+        "fibreG": 0
+      },
+      "fdcId": 173414,
+      "sourceDescription": "Cheese, cheddar (Includes foods for USDA's Food Distribution Program)"
+    },
+    {
+      "id": "feta",
+      "name": "Feta",
+      "preparation": "unspecified",
+      "aliases": [
+        "feta",
+        "kase"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 265,
+        "proteinG": 14.2,
+        "carbohydrateG": 3.88,
+        "fatG": 21.5,
+        "fibreG": 0
+      },
+      "fdcId": 173420,
+      "sourceDescription": "Cheese, feta"
+    },
+    {
+      "id": "chicken",
+      "name": "Hähnchenbrust, gegart · ohne Haut",
+      "preparation": "cooked",
+      "aliases": [
+        "hahnchen",
+        "huhn"
+      ],
+      "vision": [
+        "chicken"
+      ],
+      "per100g": {
+        "energyKcal": 165,
+        "proteinG": 31,
+        "carbohydrateG": 0,
+        "fatG": 3.57,
+        "fibreG": 0
+      },
+      "fdcId": 171477,
+      "sourceDescription": "Chicken, broilers or fryers, breast, meat only, cooked, roasted"
+    },
+    {
+      "id": "salmon",
+      "name": "Lachs, gegart",
+      "preparation": "cooked",
+      "aliases": [
+        "lachs",
+        "fisch"
+      ],
+      "vision": [
+        "salmon"
+      ],
+      "per100g": {
+        "energyKcal": 182,
+        "proteinG": 25.4,
+        "carbohydrateG": 0,
+        "fatG": 8.13,
+        "fibreG": 0
+      },
+      "fdcId": 171998,
+      "sourceDescription": "Fish, salmon, Atlantic, wild, cooked, dry heat"
+    },
+    {
+      "id": "tuna",
+      "name": "Thunfisch, in Wasser, abgetropft",
+      "preparation": "cooked",
+      "aliases": [
+        "thunfisch",
+        "fisch"
+      ],
+      "vision": [
+        "tuna"
+      ],
+      "per100g": {
+        "energyKcal": 86,
+        "proteinG": 19.4,
+        "carbohydrateG": 0,
+        "fatG": 0.96,
+        "fibreG": 0
+      },
+      "fdcId": 173709,
+      "sourceDescription": "Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program)"
+    },
+    {
+      "id": "tofu",
+      "name": "Tofu, fest",
+      "preparation": "unspecified",
+      "aliases": [
+        "tofu"
+      ],
+      "vision": [
+        "tofu"
+      ],
+      "per100g": {
+        "energyKcal": 78,
+        "proteinG": 9.04,
+        "carbohydrateG": 2.85,
+        "fatG": 4.17,
+        "fibreG": 0.9
+      },
+      "fdcId": 172448,
+      "sourceDescription": "Tofu, firm, prepared with calcium sulfate and magnesium chloride (nigari)"
+    },
+    {
+      "id": "lentils",
+      "name": "Linsen, gekocht",
+      "preparation": "cooked",
+      "aliases": [
+        "linsen"
+      ],
+      "vision": [
+        "lentil"
+      ],
+      "per100g": {
+        "energyKcal": 116,
+        "proteinG": 9.02,
+        "carbohydrateG": 20.1,
+        "fatG": 0.38,
+        "fibreG": 7.9
+      },
+      "fdcId": 172421,
+      "sourceDescription": "Lentils, mature seeds, cooked, boiled, without salt"
+    },
+    {
+      "id": "chickpeas",
+      "name": "Kichererbsen, gekocht",
+      "preparation": "cooked",
+      "aliases": [
+        "kichererbse"
+      ],
+      "vision": [
+        "chickpea"
+      ],
+      "per100g": {
+        "energyKcal": 164,
+        "proteinG": 8.86,
+        "carbohydrateG": 27.4,
+        "fatG": 2.59,
+        "fibreG": 7.6
+      },
+      "fdcId": 173757,
+      "sourceDescription": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt"
+    },
+    {
+      "id": "kidney",
+      "name": "Kidneybohnen, gekocht",
+      "preparation": "cooked",
+      "aliases": [
+        "bohnen",
+        "kidney"
+      ],
+      "vision": [
+        "bean"
+      ],
+      "per100g": {
+        "energyKcal": 127,
+        "proteinG": 8.67,
+        "carbohydrateG": 22.8,
+        "fatG": 0.5,
+        "fibreG": 7.4
+      },
+      "fdcId": 175194,
+      "sourceDescription": "Beans, kidney, red, mature seeds, cooked, boiled, without salt"
+    },
+    {
+      "id": "almonds",
+      "name": "Mandeln",
+      "preparation": "unspecified",
+      "aliases": [
+        "mandeln",
+        "nusse"
+      ],
+      "vision": [
+        "almond"
+      ],
+      "per100g": {
+        "energyKcal": 579,
+        "proteinG": 21.2,
+        "carbohydrateG": 21.6,
+        "fatG": 49.9,
+        "fibreG": 12.5
+      },
+      "fdcId": 170567,
+      "sourceDescription": "Nuts, almonds"
+    },
+    {
+      "id": "chia",
+      "name": "Chiasamen, trocken",
+      "preparation": "raw",
+      "aliases": [
+        "chia"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 486,
+        "proteinG": 16.5,
+        "carbohydrateG": 42.1,
+        "fatG": 30.7,
+        "fibreG": 34.4
+      },
+      "fdcId": 170554,
+      "sourceDescription": "Seeds, chia seeds, dried"
+    },
+    {
+      "id": "oil",
+      "name": "Olivenöl",
+      "preparation": "unspecified",
+      "aliases": [
+        "ol",
+        "olivenol"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 884,
+        "proteinG": 0,
+        "carbohydrateG": 0,
+        "fatG": 100,
+        "fibreG": 0
+      },
+      "fdcId": 171413,
+      "sourceDescription": "Oil, olive, salad or cooking"
+    },
+    {
+      "id": "butter",
+      "name": "Butter, ungesalzen",
+      "preparation": "unspecified",
+      "aliases": [
+        "butter"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 717,
+        "proteinG": 0.85,
+        "carbohydrateG": 0.06,
+        "fatG": 81.1,
+        "fibreG": 0
+      },
+      "fdcId": 173430,
+      "sourceDescription": "Butter, without salt"
+    },
+    {
+      "id": "sugar",
+      "name": "Zucker",
+      "preparation": "unspecified",
+      "aliases": [
+        "zucker"
+      ],
+      "vision": [],
+      "per100g": {
+        "energyKcal": 387,
+        "proteinG": 0,
+        "carbohydrateG": 100,
+        "fatG": 0,
+        "fibreG": 0
+      },
+      "fdcId": 169655,
+      "sourceDescription": "Sugars, granulated"
+    },
+    {
+      "id": "chocolate",
+      "name": "Milchschokolade",
+      "preparation": "unspecified",
+      "aliases": [
+        "schokolade",
+        "schoko"
+      ],
+      "vision": [
+        "chocolate"
+      ],
+      "per100g": {
+        "energyKcal": 535,
+        "proteinG": 7.65,
+        "carbohydrateG": 59.4,
+        "fatG": 29.7,
+        "fibreG": 3.4
+      },
+      "fdcId": 167587,
+      "sourceDescription": "Candies, milk chocolate"
+    },
+    {
+      "id": "pizza",
+      "name": "Käsepizza, gebacken · Beispielrezept",
+      "preparation": "cooked",
+      "aliases": [
+        "pizza"
+      ],
+      "vision": [
+        "pizza"
+      ],
+      "per100g": {
+        "energyKcal": 268,
+        "proteinG": 10.4,
+        "carbohydrateG": 29,
+        "fatG": 12.3,
+        "fibreG": 2.2
+      },
+      "fdcId": 170317,
+      "sourceDescription": "Pizza, cheese topping, regular crust, frozen, cooked"
+    },
+    {
+      "id": "burger",
+      "name": "Cheeseburger · Beispielrezept",
+      "preparation": "cooked",
+      "aliases": [
+        "burger",
+        "cheeseburger"
+      ],
+      "vision": [
+        "cheeseburger",
+        "hamburger"
+      ],
+      "per100g": {
+        "energyKcal": 308,
+        "proteinG": 16.5,
+        "carbohydrateG": 28,
+        "fatG": 14.7,
+        "fibreG": 2
+      },
+      "fdcId": 170690,
+      "sourceDescription": "Fast foods, cheeseburger; single, regular patty; plain"
+    }
+  ]
+}

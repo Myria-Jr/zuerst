@@ -93,24 +93,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private val Light = lightColorScheme(
-    primary = Color(0xFF536630), onPrimary = Color.White, primaryContainer = Color(0xFFDCE99D), onPrimaryContainer = Color(0xFF232D0A),
-    secondaryContainer = Color(0xFFEBDDEB), onSecondaryContainer = Color(0xFF33223A), surface = Color(0xFFF7F8FC),
-    onSurface = Color(0xFF302338), onSurfaceVariant = Color(0xFF544A56), surfaceContainer = Color(0xFFF0F1F6),
-    surfaceContainerLow = Color.White, surfaceContainerHigh = Color(0xFFECECF2), outline = Color(0xFF7E707C),
-)
-
-@Composable
-private fun ZuerstTheme(content: @Composable () -> Unit) {
-    val context = LocalContext.current
-    val colors = (if (Build.VERSION.SDK_INT >= 31) dynamicLightColorScheme(context) else Light).copy(
-        surface = Light.surface, background = Light.surface,
-        surfaceContainer = Light.surfaceContainer, surfaceContainerLow = Color.White,
-        surfaceContainerHigh = Light.surfaceContainerHigh,
-    )
-    MaterialTheme(colorScheme = colors, content = content)
-}
-
 private enum class Stage { Pick, Confirm, Result, Cook }
 private data class Action(val title: String, val icon: ImageVector, val perform: () -> Unit)
 
@@ -250,7 +232,7 @@ private fun Pick(catalog: Catalog, picked: List<String>, query: String, setQuery
         )
         Text(if (searching) "${options.size} Treffer" else "Schnellwahl", style = MaterialTheme.typography.labelLarge)
         if (options.isEmpty()) Text("Diese Zutat ist noch nicht im Katalog. Versuch es mit einem anderen Begriff.")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             options.forEach { id ->
                 FilterChip(selected = id in picked, onClick = { toggle(id) }, label = { Text(catalog.name(id)) },
                     modifier = Modifier.heightIn(min = 48.dp), enabled = picked.size < 3 || id in picked,

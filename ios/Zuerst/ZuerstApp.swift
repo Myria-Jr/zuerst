@@ -2,8 +2,9 @@ import SwiftUI
 
 @main
 struct ZuerstApp: App {
+    @AppStorage("appearance_mode") private var mode = "system"
     var body: some Scene {
-        WindowGroup { ZuerstRoot().preferredColorScheme(.light) }
+        WindowGroup { ZuerstRoot().preferredColorScheme(mode == "light" ? .light : mode == "dark" ? .dark : nil).tint(Palette.action) }
     }
 }
 

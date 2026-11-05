@@ -1,6 +1,6 @@
 # Zuerst
 
-Deutschsprachige App von Odkaz Labs: Wähle bis zu drei Zutaten, bestätige, was du noch da hast, und erhalte ein Gericht für zwei Personen in höchstens 20 Minuten. Web, Android und iOS verwenden denselben Katalog mit 24 Rezepten. Die Kernfunktionen laufen lokal ohne Konto. Eine freiwillige Anmeldung ermöglicht manuelle Cloud-Sicherungen.
+Deutschsprachige App von Vora (Studio-Arbeitsname im Projekt Odkaz Labs): Wähle bis zu drei Zutaten, bestätige, was du noch da hast, und erhalte ein Gericht für zwei Personen in höchstens 20 Minuten. Web, Android und iOS verwenden denselben Katalog mit 24 Rezepten. Die Kernfunktionen laufen lokal ohne Konto. Eine freiwillige Anmeldung ermöglicht manuelle Cloud-Sicherungen.
 
 ## Lokal starten
 
@@ -13,13 +13,17 @@ npm run dev
 
 Öffne [localhost:3000](http://localhost:3000). `npm test` prüft Rezeptkatalog, Suche und Matching. `npm run build` erstellt den statischen Export; `npm start` zeigt diesen Export lokal an.
 
-## Küchenjournal 1.2
+## Zuerst 1.3
 
-Version 1.2.2 setzt den gewünschten Hellmodus auch bei dunkler Systemeinstellung durch. Die Android-Navigation verbindet Material-Komponenten mit einer schwebenden, transluzenten Glasfläche und tatsächlicher Hintergrundunschärfe auf unterstützten Geräten. Auf großen Breiten wird sie zur NavigationRail. Die Lizenz der Haze-Bibliothek liegt unter `shared/licenses/haze.txt` sowie `public/licenses/haze.txt`.
+Hell, Dunkel und System sind kostenlos wählbar und bleiben gespeichert. Essen, Wasser, Bewegung, Küche und Auswertungen besitzen feste Bereichsfarben. Die Android-Navigation verbindet Material-Komponenten mit einer schwebenden, transluzenten Glasfläche und tatsächlicher Hintergrundunschärfe auf unterstützten Geräten. Auf großen Breiten wird sie zur NavigationRail. Die Lizenz der Haze-Bibliothek liegt unter `shared/licenses/haze.txt` sowie `public/licenses/haze.txt`.
 
-Die gemeinsame Grundlage für Nährwerte, mengenbasierten Vorrat, Health-Connect-Tageswerte und überprüfbare Social-Rezeptentwürfe ist in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) beschrieben. Die Typen und Logik werden auf Android und im Web mit denselben Testvektoren geprüft. Diese Grundlage enthält noch keine aktivierte KI-Fotoanalyse oder Health-Connect-Anbindung.
+Die gemeinsame Grundlage für Nährwerte, mengenbasierten Vorrat, Health-Connect-Tageswerte und überprüfbare Social-Rezeptentwürfe ist in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) beschrieben. Die Typen und Logik werden auf Android und im Web mit denselben Testvektoren geprüft. Die Lebensmittelsuche enthält 45 belegte USDA-Referenzlebensmittel; roh und gekocht sind getrennt. Lokale Foto-Suchhilfen benötigen eine bestätigte Zutat und Grammmenge. Web nutzt MobileNet (Apache 2.0), Android ML Kit, iOS Vision. Health Connect liest freigegebene Schritte/Etagen und optional tatsächliche Blutzuckermessungen; iOS liest Schritte/Etagen mit CoreMotion. Der Browser zeigt keine erfundenen Gerätedaten.
 
 Heute, Rezeptbibliothek mit Merkliste und Filtern, Vorrat mit optionalen Aufbrauchdaten, Wochenplan mit Einkaufsliste und Kochverlauf. Fehlende Zutaten lassen sich aus Rezepten oder dem gesamten Wochenplan übernehmen. „Gekauftes übernehmen“ ergänzt ausgewählte Zutaten im Vorrat. Die Liste bündelt Zutaten; Mengen stehen in den Rezepten. Der Web-Einstieg ist die Übersicht; `/kochen/` öffnet direkt die Zutatenauswahl.
+
+Das Gesundheitsjournal ist ab 16 freiwillig und separat gespeichert; unter 18 ohne Kalorienübersicht, Koffeinjournal oder eigene Plus-Käufe. Gerätefreigaben lassen sich widerrufen. Gesundheitsdaten gehen nicht in Küchensicherungen. Export, Lesen, Löschen und Wochenübersicht bleiben kostenlos. Social-Importe übernehmen Link plus selbst bereitgestellten und geprüften Rezepttext. Kein Video-Scraping.
+
+Plus: 30/90-Tage-Vergleiche, automatische Planung bis zu vier Wochen, Vorlagen und gemeinsame Einkaufsliste. 1 €/Monat, 5 €/Jahr oder 10 € einmalig für die Produktlaufzeit. Gleiche Leistungen in allen Varianten, keine kostenpflichtige Cloud-KI. Live-Verkauf bleibt bis Konto-/Anbieter-/Steuer-/Vertragsfreigabe gesperrt; eine aktivierte Sandbox ist ausdrücklich Test. Native Käufe benötigen noch eine gesonderte Store-Anbindung.
 
 Im Profil lassen sich Daten als JSON exportieren und nach Bestätigung wiederherstellen. Datenformat Version 2 ist zwischen Web, Android und iOS austauschbar. Alte native Journale werden beim Laden übernommen.
 
@@ -46,7 +50,7 @@ Die Download-APK enthält ARM64 und ARMv7 für Android-Smartphones und Tablets. 
 
 ## Statisch veröffentlichen
 
-Veröffentliche den **Inhalt** von `out/` inklusive `_next/` als Wurzel einer HTTPS-Website. Die App benötigt weder einen Node-Server noch Konfiguration oder Zugangsdaten. Die Startadresse ist die Wurzel der Website (`/`).
+Veröffentliche den **Inhalt** von `out/` inklusive `_next/` als Wurzel einer HTTPS-Website. Die lokalen Gratisfunktionen benötigen weder Backend noch Zugangsdaten. Optionales Konto/Cloud-Sicherung und Stripe Billing benötigen die jeweiligen API-Funktionen und serverseitige Konfiguration. Die Startadresse ist die Wurzel der Website (`/`).
 
 Für den APK-Download vor dem Webbuild die signierte, geprüfte Release-Datei nach `public/downloads/zuerst-android.apk` legen. Unter Windows erledigt `pwsh -File scripts/sign-android.ps1` Signatur und Prüfung nach `:app:assembleRelease`; `JAVA_HOME` und `ANDROID_HOME` müssen gesetzt sein, und Build Tools 36.0.0 müssen vorliegen. Der Schlüssel liegt im privaten Windows-Benutzerprofil. Für spätere APK-Updates denselben Schlüssel verwenden. Ohne APK blendet der Webbuild den Download aus.
 
@@ -57,3 +61,9 @@ Der verbundene Git-Build auf Vercel verwendet `node scripts/fetch-apk.mjs && npm
 ## QR-Code für den Kühlschrank
 
 Öffne [zuerst.vercel.app/kochen/](https://zuerst.vercel.app/kochen/) in Chrome und wähle **Speichern und teilen → QR-Code erstellen**. Lade den Code herunter und drucke ihn aus. Scanne ihn vor dem Aufhängen mit der Handykamera, am besten ohne WLAN. Der Zusatz `/kochen/` öffnet direkt die Zutatenauswahl. Die Startadresse ohne diesen Zusatz führt zum Küchenjournal.
+
+## Modell und Zahlungen
+
+`npm run build` lädt und prüft die 1,9-MB-MobileNet-Gewichte automatisch per SHA-256; sie werden mit der statischen App ausgeliefert. Fotos bleiben lokal. Quellen/Lizenzen unter `public/licenses/`, Lebensmitteldaten in `shared/foods.json`. `server/BILLING-HANDOFF.md` beschreibt sichere Stripe-Konfiguration und API-Vertrag. Geheimnisse gehören ausschließlich in Server-Umgebungsvariablen.
+
+Für iOS sind Mac und Xcode 26 nötig. Persönliche Gerätetests sind mit einer kostenlosen Apple-ID möglich; App Store und TestFlight erfordern das Apple Developer Program. Der Simulator-Build wird im GitHub-Workflow geprüft.

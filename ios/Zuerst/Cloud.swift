@@ -76,6 +76,13 @@ final class CloudAccountStore: ObservableObject {
         _ = try await request("\(auth)/request-password-reset", method: "POST", body: ["email":email, "redirectTo":"https://zuerst.vercel.app/reset/"])
         message = "Falls ein Konto besteht, erhältst du eine E-Mail zum Zurücksetzen."
     }
+    func plus() async throws -> Bool {
+        struct Status: Decodable { let ready: Bool; let mode: String }
+        struct Entitlement: Decodable { let plus: Bool; let mode: String }
+        let status = try JSONDecoder().decode(Status.self, from: await request("https://zuerst.vercel.app/api/billing?action=status"))
+        let access = try JSONDecoder().decode(Entitlement.self, from: await request("https://zuerst.vercel.app/api/billing?action=entitlement"))
+        return status.ready && access.plus && status.mode == access.mode
+    }
     private func jwt() async throws -> String {
         struct Token: Decodable { let token: String }
         let data = try await request("\(auth)/token")

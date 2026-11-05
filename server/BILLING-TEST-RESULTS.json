@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-05",
+  "environment": "Zuerst. Sandbox",
+  "livemode": false,
+  "planner": "iguide_61VhrEWd78sWOcAb641GSP0oME5o8",
+  "sdk": "stripe-node 23.1.0",
+  "sdkApiVersion": "2026-10-28.endive",
+  "termsVersion": "2026-11-05.1",
+  "checks": {
+    "hostedMonthlyCheckout100Cents": "paid; month entitlement active",
+    "hostedAnnualCheckout500Cents": "paid; year entitlement active",
+    "hostedLifetimeCheckout1000Cents": "paid; lifetime entitlement active",
+    "existingPlusBlocksDuplicatePurchase": true,
+    "portalCancellation": "cancel_at set; access retained until paid period end; cancelAtPeriodEnd=true",
+    "lifetimeFullRefund": "refund succeeded; plus=false",
+    "subscriptionInvoiceDecline": "official decline-after-attach test card; Stripe past_due; plus=false",
+    "failedTestSubscriptionCleanup": "canceled; plus=false",
+    "concurrentWebhookReplayHttpStatuses": [200, 200],
+    "webhookReplayDatabaseRows": 1,
+    "tamperedWebhookHttpStatus": 400,
+    "wrongEnvironmentWebhookHttpStatus": 400,
+    "sameCheckoutRequestId": "same session reused",
+    "changedPlanWithSameRequestId": "rejected",
+    "changedPlanNewRequestId": "prior open session expired; new session created",
+    "expiredRequestReplay": "rejected",
+    "unpaidPendingCheckoutEntitlement": "free; plus=false",
+    "targetedAutomatedTests": {"passed": 11, "failed": 0}
+  },
+  "testScope": "Actual Stripe sandbox payments through hosted Checkout and actual Neon persistence. Webhook HTTP replay used the genuine sandbox event fetched from Stripe and locally signed with the configured endpoint secret. Auth filtering, CSRF, adulthood and terms gates are covered by local HTTP tests. Test fixture identities are not real Neon user accounts.",
+  "notYetVerified": [
+    "Public Stripe-to-Vercel delivery after the coordinated app deployment",
+    "Full deployed purchase initiated from a real authenticated Neon browser session",
+    "Native account-session to Billing linkage",
+    "Real dispute lifecycle beyond policy tests",
+    "Dashboard Smart Retries and automated recovery email settings"
+  ],
+  "liveBlockers": [
+    "Only the sandbox account is available through the connected Stripe plugin",
+    "Merchant, legal provider and tax readiness are not confirmed",
+    "BILLING_LIVE_APPROVED remains unset"
+  ]
+}
