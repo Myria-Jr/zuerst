@@ -1,0 +1,18 @@
+{
+  "synthetic": true,
+  "nutrition": {
+    "per100g": {"energyKcal": 350, "proteinG": 12, "carbohydrateG": 70, "fatG": 2, "fibreG": null},
+    "grams": 150,
+    "expected": {"energyKcal": 525, "proteinG": 18, "carbohydrateG": 105, "fatG": 3, "fibreG": null}
+  },
+  "links": [
+    {"url": "https://www.instagram.com/reel/fixture/", "accepted": true},
+    {"url": "https://vm.tiktok.com/fixture/", "accepted": true},
+    {"url": "https://instagram.com.evil.example/reel/fixture", "accepted": false},
+    {"url": "https://instagram.com@evil.example/fixture", "accepted": false},
+    {"url": "https://user@instagram.com/fixture", "accepted": false},
+    {"url": "http://instagram.com/reel/fixture", "accepted": false},
+    {"url": "https://www.instagram.com:444/reel/fixture", "accepted": false},
+    {"url": "file:///tmp/recipe", "accepted": false}
+  ]
+}

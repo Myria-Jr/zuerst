@@ -1195,7 +1195,7 @@ export default function JournalApp() {
                     den nativen Apps und ein ruhiger Blick auf deine Kochwoche.
                   </p>
                   <p className="j-muted">
-                    Eine Marke von Odkaz Labs. Version 1.2.0.
+                    Eine Marke von Odkaz Labs. Version 1.2.1.
                   </p>
                   <a
                     className="j-link"

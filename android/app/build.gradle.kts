@@ -12,8 +12,8 @@ android {
         applicationId = "labs.odkaz.zuerst"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.2.1"
         if (!providers.gradleProperty("zuerstAllAbis").isPresent) {
             ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         }
@@ -49,6 +49,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("dev.chrisbanes.haze:haze:1.1.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
@@ -56,4 +57,5 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     systemProperty("zuerst.catalog", rootProject.file("../shared/catalog.json").absolutePath)
+    systemProperty("zuerst.domainFixtures", rootProject.file("../shared/domain-fixtures.json").absolutePath)
 }

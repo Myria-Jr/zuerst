@@ -3,7 +3,7 @@ import SwiftUI
 @main
 struct ZuerstApp: App {
     var body: some Scene {
-        WindowGroup { ZuerstRoot() }
+        WindowGroup { ZuerstRoot().preferredColorScheme(.light) }
     }
 }
 

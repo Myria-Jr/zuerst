@@ -6,8 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,8 +52,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -86,7 +84,10 @@ import androidx.compose.ui.tooling.preview.Preview
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT),
+        )
         val catalog = assets.open("catalog.json").bufferedReader().use { Catalog(it.readText()) }
         setContent { ZuerstTheme { JournalScreen(catalog) } }
     }
@@ -94,27 +95,19 @@ class MainActivity : ComponentActivity() {
 
 private val Light = lightColorScheme(
     primary = Color(0xFF536630), onPrimary = Color.White, primaryContainer = Color(0xFFDCE99D), onPrimaryContainer = Color(0xFF232D0A),
-    secondaryContainer = Color(0xFFEBDDEB), onSecondaryContainer = Color(0xFF33223A), surface = Color(0xFFF7F3E9),
-    onSurface = Color(0xFF302338), onSurfaceVariant = Color(0xFF544A56), surfaceContainer = Color(0xFFF1EAE2),
-    surfaceContainerLow = Color(0xFFFFFBF2), surfaceContainerHigh = Color(0xFFEDE4DD), outline = Color(0xFF7E707C),
-)
-private val Dark = darkColorScheme(
-    primary = Color(0xFFC6D982), onPrimary = Color(0xFF283514), primaryContainer = Color(0xFF39491F), onPrimaryContainer = Color(0xFFEEF9C8),
-    secondaryContainer = Color(0xFF49364C), onSecondaryContainer = Color(0xFFF2DFF1), surface = Color(0xFF1A151C),
-    onSurface = Color(0xFFF3E8EF), onSurfaceVariant = Color(0xFFD5C7D4), surfaceContainer = Color(0xFF2A222B),
-    surfaceContainerLow = Color(0xFF241D26), surfaceContainerHigh = Color(0xFF352B35), outline = Color(0xFFA998A8),
+    secondaryContainer = Color(0xFFEBDDEB), onSecondaryContainer = Color(0xFF33223A), surface = Color(0xFFF7F8FC),
+    onSurface = Color(0xFF302338), onSurfaceVariant = Color(0xFF544A56), surfaceContainer = Color(0xFFF0F1F6),
+    surfaceContainerLow = Color.White, surfaceContainerHigh = Color(0xFFECECF2), outline = Color(0xFF7E707C),
 )
 
 @Composable
 private fun ZuerstTheme(content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val dark = isSystemInDarkTheme()
-    val colors = when {
-        Build.VERSION.SDK_INT >= 31 && dark -> dynamicDarkColorScheme(context)
-        Build.VERSION.SDK_INT >= 31 -> dynamicLightColorScheme(context)
-        dark -> Dark
-        else -> Light
-    }
+    val colors = (if (Build.VERSION.SDK_INT >= 31) dynamicLightColorScheme(context) else Light).copy(
+        surface = Light.surface, background = Light.surface,
+        surfaceContainer = Light.surfaceContainer, surfaceContainerLow = Color.White,
+        surfaceContainerHigh = Light.surfaceContainerHigh,
+    )
     MaterialTheme(colorScheme = colors, content = content)
 }
 

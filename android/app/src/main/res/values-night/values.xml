@@ -1,6 +1,10 @@
 <resources>
-    <style name="Theme.Zuerst" parent="android:style/Theme.Material.NoActionBar">
-        <item name="android:windowBackground">#1A151C</item>
+    <string name="app_name">Zuerst</string>
+    <color name="icon_background">#33223A</color>
+    <style name="Theme.Zuerst" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">#F7F8FC</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
 </resources>

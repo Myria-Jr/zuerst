@@ -25,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -33,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
 
 private enum class JournalTab(val label: String) { Today("Heute"), Recipes("Rezepte"), Stock("Vorrat"), Plan("Plan"), History("Verlauf") }
 private enum class JournalPage { Tabs, Receipt, Kitchen, Profile, Recipe }
@@ -43,6 +46,8 @@ private val weekdayFormat = DateTimeFormatter.ofPattern("EE", Locale.GERMAN)
 @Composable
 internal fun JournalScreen(catalog: Catalog) {
     val context = LocalContext.current
+    val glass = remember { HazeState() }
+    val expanded = LocalConfiguration.current.screenWidthDp >= 840
     val store = remember { JournalStore(context, catalog) }
     var journal by remember { mutableStateOf(store.load()) }
     var tab by rememberSaveable { mutableStateOf(JournalTab.Today) }
@@ -84,20 +89,13 @@ internal fun JournalScreen(catalog: Catalog) {
                 actions = { if (page == JournalPage.Tabs) IconButton({ page = JournalPage.Profile }) { Icon(Icons.Default.AccountCircle, "Profil und Sicherung") } },
             )
         },
-        bottomBar = {
-            if (page == JournalPage.Tabs) NavigationBar {
-                val icons = listOf(Icons.Default.Home, Icons.AutoMirrored.Filled.List, Icons.Default.ShoppingCart, Icons.Default.DateRange, Icons.Default.Check)
-                JournalTab.entries.forEach { item ->
-                    NavigationBarItem(selected = tab == item, onClick = { tab = item },
-                        icon = { Icon(icons[item.ordinal], null) }, label = { Text(item.label) })
-                }
-            }
-        },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
-            key(page, tab) {
-                Column(Modifier.widthIn(max = 640.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 12.dp),
+            Box(Modifier.fillMaxSize().haze(glass).padding(start = if (expanded && page == JournalPage.Tabs) 112.dp else 0.dp), contentAlignment = Alignment.TopCenter) {
+              key(page, tab) {
+                Column(Modifier.widthIn(max = 640.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 12.dp)
+                    .padding(bottom = if (page == JournalPage.Tabs && !expanded) 108.dp else 0.dp),
                     verticalArrangement = Arrangement.spacedBy(13.dp)) {
                     if (page == JournalPage.Profile) {
                         Profile(catalog, journal, ::update)
@@ -122,6 +120,14 @@ internal fun JournalScreen(catalog: Catalog) {
                     }
                     Spacer(Modifier.height(6.dp))
                 }
+              }
+            }
+            if (page == JournalPage.Tabs) {
+                val icons = listOf(Icons.Default.Home, Icons.AutoMirrored.Filled.List, Icons.Default.ShoppingCart, Icons.Default.DateRange, Icons.Default.Check)
+                GlassNavigation(JournalTab.entries.map { NavigationDestination(it.label, icons[it.ordinal]) }, tab.ordinal,
+                    { tab = JournalTab.entries[it] }, glass, expanded,
+                    Modifier.align(if (expanded) Alignment.CenterStart else Alignment.BottomCenter)
+                        .padding(horizontal = 12.dp, vertical = 12.dp).widthIn(max = 640.dp))
             }
         }
     }

@@ -1,6 +1,6 @@
 .journal-app {
-  --j-bg: #f6f4ef;
-  --j-card: #fffefa;
+  --j-bg: #f7f8fc;
+  --j-card: #ffffff;
   --j-ink: #302a34;
   --j-muted: #655c68;
   --j-line: #e5dfe6;
@@ -141,7 +141,10 @@
   width: min(490px, calc(100% - 24px));
   z-index: 20;
   justify-content: space-around;
-  background: var(--j-card);
+  background: rgb(255 255 255 / 76%);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid rgb(255 255 255 / 90%);
   border-radius: 30px;
   padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
   box-shadow: 0 8px 30px #24172e18;
@@ -896,43 +899,7 @@
     height: 100px;
   }
 }
-@media (prefers-color-scheme: dark) {
-  .journal-app {
-    --j-bg: #17151b;
-    --j-card: #242128;
-    --j-ink: #f0eaf1;
-    --j-muted: #bfb5c5;
-    --j-line: #403747;
-    --j-accent: #d7bce9;
-    --j-button: #d7bce9;
-    --j-on-button: #34213e;
-    --j-mint: #313d28;
-    --j-lavender: #3b2e46;
-    --j-soft: #332b3b;
-    color-scheme: dark;
-  }
-  .j-feature p,
-  .j-tag {
-    color: #cadbb9;
-  }
-  .j-feature .j-primary {
-    background: #d2e5b7;
-    color: #293b1d;
-  }
-  .j-orb,
-  .j-dialog-symbol,
-  .j-recipe-icon.is-ready {
-    background: #cde2b519;
-    color: #d2e5b7;
-  }
-  .j-toast {
-    background: #e4d8ec;
-    color: #32263a;
-  }
-  .j-toast .j-icon {
-    color: #32263a;
-  }
-}
+
 @media (prefers-reduced-motion: reduce) {
   .journal-app * {
     transition: none !important;
@@ -959,3 +926,6 @@
   color: var(--j-accent);
   font-weight: 700;
 }
+
+@supports not (backdrop-filter: blur(1px)) { .j-nav { background: #fff; } }
+@media (prefers-reduced-transparency: reduce) { .j-nav { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; } }

@@ -43,7 +43,7 @@ struct ProfileView: View {
                 } header: { Text("Deine Daten gehören dir") } footer: { Text("Sichere dein Journal als Datei. Beim Import entscheidest du, ob die lokalen Daten ersetzt werden.") }
                 Section("Über Zuerst") {
                     Text("Dein Begleiter für Einkauf, Vorrat und selbst gekochte Gerichte. Bonfotos werden auf diesem Gerät gelesen. Die Cloud-Sicherung ist freiwillig. Deine Anmeldung wird in der Apple Keychain gespeichert.")
-                    Text("Eine Marke von Odkaz Labs. Version 1.2.0.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
+                    Text("Eine Marke von Odkaz Labs. Version 1.2.1.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
                     Link("Quellcode auf GitHub", destination: URL(string: "https://github.com/Myria-Jr/zuerst")!)
                 }
             }.navigationTitle("Dein Zuerst").toolbar { ToolbarItem(placement: .confirmationAction) { Button("Fertig") { dismiss() } } }

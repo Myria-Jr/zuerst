@@ -15,6 +15,10 @@ npm run dev
 
 ## Küchenjournal 1.2
 
+Version 1.2.1 setzt den gewünschten Hellmodus auch bei dunkler Systemeinstellung durch. Die Android-Navigation verbindet Material-Komponenten mit einer schwebenden, transluzenten Glasfläche und tatsächlicher Hintergrundunschärfe auf unterstützten Geräten. Auf großen Breiten wird sie zur NavigationRail. Die Lizenz der Haze-Bibliothek liegt unter `shared/licenses/haze.txt` sowie `public/licenses/haze.txt`.
+
+Die gemeinsame Grundlage für Nährwerte, mengenbasierten Vorrat, Health-Connect-Tageswerte und überprüfbare Social-Rezeptentwürfe ist in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) beschrieben. Die Typen und Logik werden auf Android und im Web mit denselben Testvektoren geprüft. Diese Grundlage enthält noch keine aktivierte KI-Fotoanalyse oder Health-Connect-Anbindung.
+
 Heute, Rezeptbibliothek mit Merkliste und Filtern, Vorrat mit optionalen Aufbrauchdaten, Wochenplan mit Einkaufsliste und Kochverlauf. Fehlende Zutaten lassen sich aus Rezepten oder dem gesamten Wochenplan übernehmen. „Gekauftes übernehmen“ ergänzt ausgewählte Zutaten im Vorrat. Die Liste bündelt Zutaten; Mengen stehen in den Rezepten. Der Web-Einstieg ist die Übersicht; `/kochen/` öffnet direkt die Zutatenauswahl.
 
 Im Profil lassen sich Daten als JSON exportieren und nach Bestätigung wiederherstellen. Datenformat Version 2 ist zwischen Web, Android und iOS austauschbar. Alte native Journale werden beim Laden übernommen.
@@ -33,7 +37,7 @@ Die öffentlichen Dienstadressen stehen in den Cloud-Modulen. Datenbank-Zugangsd
 
 Das native Küchenjournal bündelt passende Gerichte, Vorrat und Kochverlauf. Du kannst einen Kassenbon fotografieren, ein vorhandenes Foto wählen oder Bontext einfügen. Die Erkennung läuft auf dem Gerät. Prüfe die Zutaten vor dem Übernehmen. Gespeichert werden bestätigte Zutaten und eingetragene Gerichte. Der Verlauf zeigt die letzten sieben Tage.
 
-- **Android:** `android/` in Android Studio öffnen (JDK 17, Android SDK 35). `gradlew.bat :app:testReleaseUnitTest :app:assembleRelease` auf Windows beziehungsweise `./gradlew :app:testReleaseUnitTest :app:assembleRelease` auf macOS/Linux. Jetpack Compose nutzt Material 3 mit der Systempalette auf Android 12+ und einer Zuerst-Palette als Fallback. Mindestversion: Android 8.
+- **Android:** `android/` in Android Studio öffnen (JDK 17, Android SDK 35). `gradlew.bat :app:testReleaseUnitTest :app:assembleRelease` auf Windows beziehungsweise `./gradlew :app:testReleaseUnitTest :app:assembleRelease` auf macOS/Linux. Jetpack Compose nutzt Material 3 mit der hellen Systempalette auf Android 12+ und einer Zuerst-Palette als Fallback. Mindestversion: Android 8.
 - **iOS:** `ios/Zuerst.xcodeproj` in Xcode mit iOS-26-SDK öffnen und das Schema `Zuerst` im iPhone-Simulator starten. Der SwiftUI-Dock nutzt Apples Liquid Glass über einem bewegten Mesh; die Bedienung berücksichtigt reduzierte Bewegung und Transparenz. Für Gerätebuilds in Xcode ein Apple-Entwicklerteam wählen. Eine iOS-App wird über TestFlight/App Store oder mit passender Geräteprovisionierung verteilt; die APK ist ausschließlich für Android.
 
 Bei Rezeptänderungen `npm run sync:native` ausführen und `shared/catalog.json` mit einchecken. `npm run sync:native -- --check` prüft die Übereinstimmung. Der GitHub-Workflow in `.github/workflows/native.yml` prüft die nativen Builds ohne Verteilungsschlüssel.

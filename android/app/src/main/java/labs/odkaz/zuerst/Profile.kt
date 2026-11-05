@@ -93,7 +93,7 @@ internal fun Profile(catalog: Catalog, journal: Journal, update: (Journal) -> Un
     JournalCard {
         Text("Über Zuerst", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Dein Begleiter für Einkauf, Vorrat und selbst gekochte Gerichte. Bonfotos werden auf diesem Gerät gelesen und anschließend verworfen. Die Cloud-Sicherung ist freiwillig. Deine Anmeldung wird mit dem Android Keystore verschlüsselt gespeichert.")
-        Text("Eine Marke von Odkaz Labs. Version 1.2.0.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Eine Marke von Odkaz Labs. Version 1.2.1.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     restore?.let { backup -> AlertDialog(onDismissRequest = { restore = null }, title = { Text("Sicherung wiederherstellen?") }, text = { Text("Du übernimmst ${backup.stock.size} Vorratszutaten, ${backup.meals.size} Kocheinträge und ${backup.plans.size} geplante Gerichte. Deine lokalen Daten werden ersetzt. Exportiere sie vorher, wenn du sie behalten möchtest.") },
         confirmButton = { TextButton({ update(backup); restore = null; message = "Sicherung wiederhergestellt." }) { Text("Lokale Daten ersetzen") } }, dismissButton = { TextButton({ restore = null }) { Text("Abbrechen") } }) }
