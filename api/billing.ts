@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { isPlan, billingTermsVersion } from '../lib/billing-policy.ts';
-import { appOrigin, BillingError, configuration, userFromRequest, transaction, refresh, checkout, stripeClient } from '../server/billing.ts';
+import { isPlan, billingTermsVersion } from '../lib/billing-policy.js';
+import { appOrigin, BillingError, configuration, userFromRequest, transaction, refresh, checkout, stripeClient } from '../server/billing.js';
 type Request=IncomingMessage & {body?:unknown;query?:Record<string,string|string[]>};
 export default async function handler(request:Request,response:ServerResponse) {
   response.setHeader('Content-Type','application/json; charset=utf-8');response.setHeader('Cache-Control','private, no-store');response.setHeader('X-Content-Type-Options','nosniff');response.setHeader('Vary','Cookie, Origin');
