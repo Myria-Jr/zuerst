@@ -593,8 +593,11 @@ private fun Metric(
         shape = RoundedCornerShape(24.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = LocalTones.current.trend,
-                contentColor = LocalTones.current.onTrend,
+                containerColor =
+                    if (title == "Vorrat") LocalTones.current.kitchen else LocalTones.current.trend,
+                contentColor =
+                    if (title == "Vorrat") LocalTones.current.onKitchen
+                    else LocalTones.current.onTrend,
             ),
     ) {
         Column(Modifier.padding(15.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {

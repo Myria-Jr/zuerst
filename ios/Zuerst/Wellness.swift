@@ -63,6 +63,7 @@ struct WellnessData: Codable { var version = 1; var profile: WellnessProfile?; v
 
 struct WellnessView: View {
     @ObservedObject var store: WellnessStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var motion = MotionJournal()
     @State private var age = ""
     @State private var consent = false
@@ -97,6 +98,18 @@ struct WellnessView: View {
                     HStack { ForEach([250,500], id: \.self) { ml in Button("+ \(ml) ml") { undo = store.data; store.update { $0.drinks.append(WaterEntry(id: UUID().uuidString, kind: "water", ml: ml, caffeineMg: 0, day: day, at: ISO8601DateFormatter().string(from: .now), name: "Wasser")) }; message = "Wasser eingetragen." }.buttonStyle(.bordered).frame(minHeight: 48) } }
                 }
                 if store.adult { CaffeineView(store: store) }
+                if store.data.drinks.contains(where: { $0.day == day }) {
+                    JournalPanel {
+                        Text("Deine Getränke heute").font(.title2.bold())
+                        ForEach(store.data.drinks.filter { $0.day == day }) { entry in
+                            HStack {
+                                Text("\(entry.name) · \(entry.ml) ml\(entry.kind == "caffeine" && store.adult ? " · \(entry.caffeineMg) mg Koffein" : "")")
+                                Spacer()
+                                Button("Löschen", role: .destructive) { undo = store.data; store.update { $0.drinks.removeAll { $0.id == entry.id } }; message = "Getränk gelöscht." }.frame(minHeight: 48)
+                            }
+                        }
+                    }
+                }
                 JournalPanel(tint: Palette.movement) {
                     Text("Bewegung").font(.title2.bold())
                     Text("\(motion.steps.map(String.init) ?? "–") Schritte · \(motion.floors.map(String.init) ?? "–") Etagen").font(.title2.bold())
@@ -109,6 +122,7 @@ struct WellnessView: View {
             if !store.message.isEmpty { Text(store.message) }
         }
         .onChange(of: image) { _, value in Task { await analyze(value) } }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.32), value: store.data.food.count + store.data.drinks.count)
     }
     private var energy: Double { entries.reduce(0) { result, entry in result + (store.foods.first { $0.id == entry.foodId }?.per100g.energyKcal ?? 0) * entry.grams / 100 } }
     private var activation: some View {
@@ -128,6 +142,10 @@ struct WellnessView: View {
             Text("Fotos bleiben auf dem Gerät. Öl, Sauce und gewogene Gramm selbst ergänzen.").font(.footnote)
             ForEach(suggestions) { food in Button(food.name) { selected = food; photoSource = true; suggestions = [] }.frame(minHeight: 48) }
             TextField("Lebensmittel suchen · z. B. Nudeln", text: $query).textFieldStyle(.roundedBorder).frame(minHeight: 48).onChange(of: query) { _, _ in selected = nil; photoSource = false }
+            if query.isEmpty && selected == nil && !store.data.favoriteFoods.isEmpty {
+                Text("Häufig gegessen").font(.headline)
+                ForEach(store.foods.filter { store.data.favoriteFoods.contains($0.id) }) { food in Button(food.name) { selected = food; photoSource = false }.frame(minHeight: 48) }
+            }
             if selected == nil && !query.isEmpty {
                 let results = store.foods.filter { ($0.name + $0.aliases.joined(separator: " ")).localizedStandardContains(query) }.prefix(10)
                 if results.isEmpty { Text("Keine Treffer. Suche eine einzelne Grundzutat.") }

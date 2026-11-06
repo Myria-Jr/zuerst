@@ -52,6 +52,7 @@ internal fun ComfortScreen(
 ) {
     val context = LocalContext.current
     val cloud = remember { Cloud(context) }
+    val foods = remember { WellnessStore(context).foods }
     val scope = rememberCoroutineScope()
     val tones = LocalTones.current
     var plus by remember { mutableStateOf(false) }
@@ -71,6 +72,7 @@ internal fun ComfortScreen(
     }
     LaunchedEffect(Unit) { refresh() }
     JournalTitle(if (planning) "Automatisch planen" else "Dein Rhythmus")
+    if (plus) Text("Plus-Zugang serverseitig bestätigt. Sandbox-Zugänge gelten nur im Testmodus.")
     if (!plus)
         JournalCard(tones.trend, tones.onTrend) {
             Text(
@@ -118,7 +120,9 @@ internal fun ComfortScreen(
         JournalCard {
             Text("Alle Einträge bleiben lesbar", style = MaterialTheme.typography.titleLarge)
             data.getJSONArray("food").objects().reversed().forEach { e ->
-                Text("${e.optString("day")} · ${e.optString("foodId")} · ${e.optDouble("grams")} g")
+                Text(
+                    "${e.optString("day")} · ${foods.find{it.id==e.optString("foodId")}?.name?:e.optString("foodId")} · ${e.optDouble("grams")} g"
+                )
             }
         }
     } else {

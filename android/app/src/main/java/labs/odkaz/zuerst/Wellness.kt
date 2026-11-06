@@ -297,6 +297,25 @@ internal fun WellnessScreen(store: WellnessStore, data: JSONObject, update: (JSO
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
         )
+        if (chosen == null && query.isBlank()) {
+            val favorites = data.optJSONArray("favoriteFoods") ?: JSONArray()
+            val ids = (0 until favorites.length()).map { favorites.getString(it) }
+            if (ids.isNotEmpty())
+                Text("Häufig gegessen", style = MaterialTheme.typography.titleMedium)
+            store.foods
+                .filter { it.id in ids }
+                .forEach { food ->
+                    TextButton(
+                        {
+                            chosen = food
+                            fromPhoto = false
+                        },
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    ) {
+                        Text(food.name)
+                    }
+                }
+        }
         if (chosen == null && query.isNotBlank()) {
             val results =
                 store.foods.filter { (it.name + it.aliases).contains(query, true) }.take(10)
@@ -316,6 +335,22 @@ internal fun WellnessScreen(store: WellnessStore, data: JSONObject, update: (JSO
         }
         chosen?.let { f ->
             Text(f.name, fontWeight = FontWeight.Bold)
+            val favorites = data.optJSONArray("favoriteFoods") ?: JSONArray()
+            val remembered = (0 until favorites.length()).any { favorites.getString(it) == f.id }
+            TextButton({
+                val next = JSONObject(data.toString())
+                val ids = (0 until favorites.length()).map { favorites.getString(it) }
+                next.put(
+                    "favoriteFoods",
+                    JSONArray(if (remembered) ids.filter { it != f.id } else ids + f.id),
+                )
+                update(next)
+            }) {
+                Text(
+                    if (remembered) "Nicht mehr häufig gegessen"
+                    else "Als häufiges Lebensmittel merken"
+                )
+            }
             OutlinedTextField(
                 grams,
                 { grams = it },
@@ -438,6 +473,36 @@ internal fun WellnessScreen(store: WellnessStore, data: JSONObject, update: (JSO
         }
         if (adult) CaffeineCard(data, ::change)
         HealthConnectCard()
+        if (drinks.isNotEmpty())
+            JournalCard {
+                Text("Deine Getränke heute", style = MaterialTheme.typography.titleLarge)
+                drinks.forEach { drink ->
+                    Row {
+                        Text(
+                            "${drink.optString("name")} · ${drink.optInt("ml")} ml" +
+                                if (adult && drink.optString("kind") == "caffeine")
+                                    " · ${drink.optDouble("caffeineMg")} mg Koffein"
+                                else "",
+                            Modifier.weight(1f),
+                        )
+                        TextButton({
+                            val next =
+                                JSONObject(data.toString())
+                                    .put(
+                                        "drinks",
+                                        JSONArray(
+                                            data.getJSONArray("drinks").objects().filter {
+                                                it.optString("id") != drink.optString("id")
+                                            }
+                                        ),
+                                    )
+                            change(next, "Getränk gelöscht.")
+                        }) {
+                            Text("Löschen")
+                        }
+                    }
+                }
+            }
     }
     if (message.isNotBlank())
         JournalCard(tones.movement, tones.onMovement) {
