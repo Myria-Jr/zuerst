@@ -1,9 +1,17 @@
-.w-stack > .j-panel {
+.w-stack > .j-panel, .taste-panel {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 16px;
 }
+.taste-panel { display:flex; flex-direction:column; gap:16px; margin-block:20px; }
+.taste-panel h2 { display:flex; align-items:center; gap:10px; margin:0; font-size:1.25rem; }
+.taste-panel p {margin:0; line-height:1.6;}
+.taste-panel select { min-height:48px; width:100%; max-width:100%; border-radius:16px; padding:12px; background:var(--card);color:var(--text); border:1px solid var(--stroke);font:inherit; }
+.taste-panel .w-field {display:flex;flex-direction:column;gap:8px;}
+.w-small {font-size:.85rem;}
+.w-metric .w-label svg {flex:none;}
+@media(max-width:360px){.w-metric{padding:14px}.w-metric .w-label{font-size:.875rem;gap:4px}}
 .w-stack h2,
 .w-stack h3,
 .w-stack p {

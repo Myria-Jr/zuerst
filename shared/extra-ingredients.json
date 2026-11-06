@@ -1,0 +1,194 @@
+{
+  "broccoli": [
+    "Brokkoli"
+  ],
+  "corn": [
+    "Mais (Dose)"
+  ],
+  "kidneybeans": [
+    "Kidneybohnen (Dose)"
+  ],
+  "tofu": [
+    "Naturtofu"
+  ],
+  "avocado": [
+    "Avocado"
+  ],
+  "cream": [
+    "Sahne"
+  ],
+  "creamcheese": [
+    "Frischkäse"
+  ],
+  "quark": [
+    "Quark"
+  ],
+  "gnocchi": [
+    "Gnocchi (Kühlregal)"
+  ],
+  "ricenoodles": [
+    "Dünne Reisnudeln"
+  ],
+  "soysauce": [
+    "Sojasauce"
+  ],
+  "peanutbutter": [
+    "Erdnussmus"
+  ],
+  "sesame": [
+    "Sesam"
+  ],
+  "coconutmilk": [
+    "Kokosmilch"
+  ],
+  "curry": [
+    "Currypulver"
+  ],
+  "cumin": [
+    "Kreuzkümmel"
+  ],
+  "paprikaSpice": [
+    "Paprikapulver"
+  ],
+  "pepper": [
+    "Pfeffer"
+  ],
+  "cinnamon": [
+    "Zimt"
+  ],
+  "cocoa": [
+    "Backkakao"
+  ],
+  "sugar": [
+    "Zucker"
+  ],
+  "honey": [
+    "Honig"
+  ],
+  "berries": [
+    "Frische Beeren"
+  ],
+  "pear": [
+    "Birne"
+  ],
+  "orange": [
+    "Orange"
+  ],
+  "mango": [
+    "Mango"
+  ],
+  "nuts": [
+    "Walnüsse"
+  ],
+  "raisins": [
+    "Rosinen"
+  ],
+  "lettuce": [
+    "Blattsalat"
+  ],
+  "radish": [
+    "Radieschen"
+  ],
+  "mustard": [
+    "Senf"
+  ],
+  "vinegar": [
+    "Essig"
+  ],
+  "herbs": [
+    "Petersilie"
+  ],
+  "basil": [
+    "Basilikum"
+  ],
+  "ginger": [
+    "Ingwer"
+  ],
+  "springonion": [
+    "Frühlingszwiebeln"
+  ],
+  "tomatoPaste": [
+    "Tomatenmark"
+  ],
+  "chocolate": [
+    "Zartbitterschokolade"
+  ],
+  "bakingpowder": [
+    "Backpulver"
+  ],
+  "butter": [
+    "Butter"
+  ],
+  "cookedpotatoes": [
+    "Gekochte Kartoffeln"
+  ],
+  "hummus": [
+    "Hummus"
+  ],
+  "olives": [
+    "Oliven"
+  ],
+  "pesto": [
+    "Basilikumpesto"
+  ],
+  "tomatoes": [
+    "Tomaten"
+  ],
+  "zucchini": [
+    "Zucchini"
+  ],
+  "carrots": [
+    "Karotten"
+  ],
+  "mushrooms": [
+    "Champignons"
+  ],
+  "spinach": [
+    "Babyspinat"
+  ],
+  "paprika": [
+    "Paprika"
+  ],
+  "cucumber": [
+    "Gurke"
+  ],
+  "peas": [
+    "TK-Erbsen"
+  ],
+  "lentils": [
+    "Linsen (Dose)"
+  ],
+  "chickpeas": [
+    "Kichererbsen (Dose)"
+  ],
+  "whitebeans": [
+    "Weiße Bohnen (Dose)"
+  ],
+  "feta": [
+    "Feta"
+  ],
+  "cheese": [
+    "Reibekäse"
+  ],
+  "mozzarella": [
+    "Mozzarella"
+  ],
+  "tuna": [
+    "Thunfisch (Dose)"
+  ],
+  "onion": [
+    "Zwiebel"
+  ],
+  "garlic": [
+    "Knoblauch"
+  ],
+  "lemon": [
+    "Zitrone"
+  ],
+  "banana": [
+    "Banane"
+  ],
+  "apple": [
+    "Apfel"
+  ]
+}

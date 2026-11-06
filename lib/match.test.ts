@@ -32,8 +32,9 @@ test('Suche erkennt gängige Namen und bevorzugt exakte Treffer', () => {
   deepEqual(searchIngredients('Ananas'), []);
 });
 
-test('Der Katalog hat 24 vollständige Gerichte mit höchstens 20 Minuten Dauer', () => {
-  equal(recipes.length, 24);
+test('Der Katalog hat über 200 vollständige Gerichte mit höchstens 20 Minuten Dauer', () => {
+  ok(recipes.length > 200);
+  equal(new Set(recipes.map(r=>r.name)).size,recipes.length);
   equal(new Set(recipes.map(({ id }) => id)).size, recipes.length);
   for (const recipe of recipes) {
     ok(recipe.minutes > 0 && recipe.minutes <= 20, recipe.name);

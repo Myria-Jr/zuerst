@@ -1,15 +1,18 @@
 import { recipes, type Recipe, type Ingredient } from "./recipes.ts";
+import {emptyTaste,suitsTaste,type Taste} from './taste.ts';
 export function createMealPlan(
   stock: Ingredient[],
   days: number,
   vegetarian = false,
   maxMinutes = 20,
+  taste: Taste = emptyTaste(),
 ): Recipe[] {
   if (!Number.isInteger(days) || days < 1 || days > 28)
     throw new Error("Plane zwischen 1 und 28 Tagen.");
   const candidates = recipes.filter(
     (r) =>
       r.minutes <= maxMinutes &&
+      suitsTaste(r,taste) &&
       (!vegetarian || !r.items.some(([id]) => id === "tuna")),
   );
   const used = new Map<string, number>();

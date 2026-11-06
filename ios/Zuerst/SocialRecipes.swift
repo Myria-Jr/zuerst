@@ -13,6 +13,16 @@ struct SocialRecipesView: View {
     @State private var message = ""
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            JournalPanel(tint: Palette.trend) {
+                DisclosureGroup("Creator-Inspirationen · \(catalog.sources?.count ?? 0) Originale") {
+                Text("Recherchierte Originale für Alltag und Genuss. Externe Mengen und Zeiten gelten beim Creator. Zusätzlich zu \(catalog.recipes.count) lokalen Zuerst-Rezepten.")
+                ForEach(catalog.sources ?? []) { source in
+                    if let link=URL(string:source.url) { Link("\(source.title) · \(source.creator)",destination:link).frame(minHeight:48) }
+                    Text(source.note).font(.footnote)
+                    if source.url.contains("instagram.com/reel/") { Button("Dieses Reel importieren") {url=source.url; title=source.title;message="Original-Link vorgemerkt. Zutaten und Schritte übernehmen und prüfen."}.frame(minHeight:48) }
+                }
+                }
+            }
             JournalPanel(tint: Palette.kitchen) {
                 Text("Aus deinem Feed in deine Küche").font(.title2.bold())
                 Text("Link und übernommenen Rezepttext einfügen. Kein automatischer Videoabruf. Ungeprüfte Zutaten bleiben unbekannt.")

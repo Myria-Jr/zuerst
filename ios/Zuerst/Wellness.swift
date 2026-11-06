@@ -175,6 +175,7 @@ struct WellnessView: View {
 }
 
 struct ComfortView: View {
+    @AppStorage("zuerst-taste") private var tasteJSON="{}"
     let catalog: Catalog
     @ObservedObject var store: WellnessStore
     let journal: KitchenJournal
@@ -237,7 +238,12 @@ struct ComfortView: View {
         }
     }
     private func suggest() {
-        let choices = catalog.recipes.filter { (!vegetarian || !$0.items.contains { $0.id == "tuna" }) && (!fast || $0.minutes <= 10) }
+        let taste=(tasteJSON.data(using:.utf8).flatMap {try? JSONSerialization.jsonObject(with:$0)} as? [String:Any]) ?? [:]
+        let avoids=taste["avoids"] as? [String] ?? []
+        let choices = catalog.recipes.filter { recipe in
+            let mode=recipe.mode ?? (["kaesetoast","arme-ritter","paprika-quesadilla","bananen-pancakes","kartoffel-roesti"].contains(recipe.id) ? "comfort" : "balanced")
+            return (!vegetarian || !recipe.items.contains { $0.id=="tuna" }) && (!fast || recipe.minutes<=10) && !recipe.items.contains { avoids.contains($0.id) } && ((taste["diet"] as? String) != "vegetarian" || !recipe.items.contains { $0.id=="tuna" }) && ((taste["mode"] as? String ?? "all")=="all" || mode==(taste["mode"] as? String))
+        }
         var used: [String:Int] = [:]; var result: [String] = []
         for _ in 0..<(weeks*7) {
             let sorted = choices.sorted { a,b in

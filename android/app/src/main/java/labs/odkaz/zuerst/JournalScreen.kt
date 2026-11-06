@@ -303,14 +303,20 @@ internal fun JournalScreen(catalog: Catalog) {
                             }
                         } else
                             when (tab) {
-                                JournalTab.Today ->
+                                JournalTab.Today -> {
                                     Today(
                                         catalog,
                                         journal,
                                         { openKitchen(it) },
                                         { page = JournalPage.Receipt },
                                         { tab = it },
-                                    )
+                                    ) {
+                                        if(wellness.journalEnabled()) {
+                                            WellnessToday(wellnessStore,wellness,::updateWellness) { tab=JournalTab.Food }
+                                            HealthConnectCard(compact=true) { page=JournalPage.Health }
+                                        }
+                                    }
+                                }
                                 JournalTab.Food ->
                                     WellnessScreen(wellnessStore, wellness, ::updateWellness)
                                 JournalTab.More -> {
@@ -354,6 +360,7 @@ internal fun JournalScreen(catalog: Catalog) {
                                             page = JournalPage.Recipe
                                         },
                                         { update(journal.favorite(it)) },
+                                        {page=JournalPage.Social},
                                     )
                                 JournalTab.Stock ->
                                     Stock(
@@ -453,6 +460,7 @@ private fun Today(
     cook: (Boolean) -> Unit,
     receipt: () -> Unit,
     navigate: (JournalTab) -> Unit,
+    health: @Composable () -> Unit = {},
 ) {
     val ready = remember(journal.stock) { catalog.ready(journal.stock) }
     val scheme = MaterialTheme.colorScheme
@@ -462,6 +470,7 @@ private fun Today(
         style = MaterialTheme.typography.labelLarge,
     )
     JournalTitle(if (journal.name.isBlank()) "Heute" else "Hallo, ${journal.name}")
+    health()
     JournalCard(LocalTones.current.nutrition, LocalTones.current.onNutrition) {
         Text(
             "Gut essen. Gut für dich.",

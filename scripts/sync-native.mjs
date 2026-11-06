@@ -4,6 +4,7 @@ import { ingredients, pantry, quick, recipes } from '../lib/recipes.ts';
 const directory = new URL('../shared/', import.meta.url);
 const file = new URL('catalog.json', directory);
 const catalog = {
+  sources: JSON.parse(await readFile(new URL('recipe-sources.json',directory),'utf8')),
   ingredients: Object.entries(ingredients).map(([id, [name, ...aliases]]) => ({ id, name, aliases })),
   quick,
   pantry: [...pantry],

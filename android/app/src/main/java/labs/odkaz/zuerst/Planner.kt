@@ -13,6 +13,9 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import org.json.JSONObject
+import org.json.JSONArray
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -23,22 +26,67 @@ private val shortDate = DateTimeFormatter.ofPattern("EEE, d. MMM", Locale.GERMAN
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun RecipeLibrary(catalog: Catalog, journal: Journal, open: (Recipe) -> Unit, favorite: (String) -> Unit) {
+internal fun RecipeLibrary(catalog: Catalog, journal: Journal, open: (Recipe) -> Unit, favorite: (String) -> Unit, importRecipe: () -> Unit = {}) {
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableIntStateOf(0) }
+    val context = LocalContext.current
+    val storage = remember { context.getSharedPreferences("zuerst-taste", android.content.Context.MODE_PRIVATE) }
+    var taste by remember { mutableStateOf(runCatching { JSONObject(storage.getString("value", "{}") ?: "{}") }.getOrDefault(JSONObject())) }
+    var editing by rememberSaveable { mutableStateOf(false) }
+    var avoidQuery by rememberSaveable { mutableStateOf("") }
+    var limit by rememberSaveable { mutableIntStateOf(30) }
+    var saveError by remember { mutableStateOf("") }
+    fun save(next: JSONObject) { taste = next; saveError = if(storage.edit().putString("value", next.toString()).commit()) "" else "Vorlieben gelten nur für diese Sitzung. Speicher nicht verfügbar." }
+    fun option(key: String, value: String) { save(JSONObject(taste.toString()).put(key, value)) }
+    fun ids(key:String):List<String> = taste.optJSONArray(key)?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList()
+    LaunchedEffect(query, filter, taste.toString()) { limit = 30 }
     JournalTitle("Rezepte")
-    Text("24 Ideen. Zwei Portionen. Höchstens 20 Minuten.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+    FilledTonalButton(importRecipe,Modifier.fillMaxWidth().heightIn(min=48.dp)){ Text("Instagram-Rezepte entdecken & importieren") }
+    Text("${catalog.recipes.size} Ideen. Zwei Portionen. Höchstens 20 Minuten.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+    JournalCard(LocalTones.current.kitchen, LocalTones.current.onKitchen) {
+        Text("Dein Geschmack", style = MaterialTheme.typography.titleLarge)
+        if(!taste.optBoolean("done") || editing) {
+            Text("Was isst du gern? Deine Auswahl sortiert die Rezepte. Jederzeit änderbar, nur auf diesem Gerät.")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                listOf("all" to "Alles", "vegetarian" to "Vegetarisch").forEach { (id,title) -> ZuerstFilter(title,taste.optString("diet","all")==id) { option("diet",id) } }
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                listOf("all" to "Beides", "balanced" to "Gemüse & Alltag", "comfort" to "Comfort Food").forEach { (id,title) -> ZuerstFilter(title,taste.optString("mode","all")==id) { option("mode",id) } }
+            }
+            Text("Das mag ich", style=MaterialTheme.typography.titleSmall)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                listOf("pasta","rice","potatoes","chickpeas","tofu","eggs","cheese","mushrooms","broccoli","spinach","paprika","banana").forEach { id ->
+                    ZuerstFilter(catalog.name(id),id in ids("likes")) {
+                        val likes=ids("likes"); save(JSONObject(taste.toString()).put("likes",JSONArray(if(id in likes) likes-id else likes+id)).put("avoids",JSONArray(ids("avoids")-id)))
+                    }
+                }
+            }
+            OutlinedTextField(avoidQuery,{avoidQuery=it},Modifier.fillMaxWidth(),label={Text("Zutat ausschließen")},singleLine=true)
+            if(avoidQuery.isNotBlank()) catalog.search(avoidQuery).take(4).forEach { id -> TextButton({save(JSONObject(taste.toString()).put("avoids",JSONArray((ids("avoids")+id).distinct())).put("likes",JSONArray(ids("likes")-id)));avoidQuery=""}){Text("${catalog.name(id)} ausschließen")} }
+            ids("avoids").forEach { id -> TextButton({save(JSONObject(taste.toString()).put("avoids",JSONArray(ids("avoids")-id)))}) {Text("${catalog.name(id)} wieder erlauben")} }
+            Text("Filter prüfen Zutatenbezeichnungen, keine Etiketten oder Spuren. Bei Allergien jede Zutat prüfen.",style=MaterialTheme.typography.bodySmall)
+            Button({save(JSONObject(taste.toString()).put("done",true));editing=false},Modifier.fillMaxWidth().heightIn(min=48.dp)){Text("Meine Rezepte zeigen")}
+        } else {
+            Text("${ids("likes").size} Lieblingszutaten · ${ids("avoids").size} ausgeschlossen")
+            TextButton({editing=true}){Text("Vorlieben anpassen")}
+        }
+        if(saveError.isNotEmpty()) Text(saveError)
+    }
     OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text("Gericht oder Zutat suchen") }, leadingIcon = { Icon(Icons.Default.Search, null) }, singleLine = true)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf("Alle", "Gemerkt", "Aus Vorrat", "Vegetarisch", "Bis 10 Min.").forEachIndexed { index, title -> ZuerstFilter(title,filter == index) { filter = index } }
     }
     val found = catalog.recipes.filter { recipe ->
+        recipe.items.none { it.id in ids("avoids") } &&
+        (taste.optString("diet")!="vegetarian" || recipe.items.none{it.id=="tuna"}) &&
+        (taste.optString("mode","all")=="all" || recipe.mode==taste.optString("mode")) &&
         (query.isBlank() || recipe.name.contains(query.trim(), true) || recipe.items.any { catalog.name(it.id).contains(query.trim(), true) }) &&
             when (filter) { 1 -> recipe.id in journal.favorites; 2 -> journal.missing(recipe).isEmpty(); 3 -> recipe.items.none { it.id == "tuna" }; 4 -> recipe.minutes <= 10; else -> true }
-    }
+    }.sortedWith(compareByDescending<Recipe> { recipe -> recipe.items.count { it.id in ids("likes") }*10+recipe.items.count { it.id in journal.stock } }.thenBy { if(it.category in setOf("Frühstück","Desserts")) 1 else 0 }.thenBy { it.minutes }.thenBy { it.name })
     JournalCard {
         Text("${found.size} Rezepte", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        found.forEach { recipe -> RecipeRow(recipe, journal, { open(recipe) }, { favorite(recipe.id) }) }
+        found.take(limit).forEach { recipe -> RecipeRow(recipe, journal, { open(recipe) }, { favorite(recipe.id) }) }
+        if(found.size>limit) TextButton({limit+=30}){Text("Weitere Rezepte zeigen (${found.size-limit})")}
         if (found.isEmpty()) Text(if (filter == 1) "Tippe bei einem Rezept auf das Herz, um es hier zu merken." else "Kein passendes Rezept. Ändere die Suche oder den Filter.")
     }
 }

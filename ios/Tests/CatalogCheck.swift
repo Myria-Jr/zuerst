@@ -6,7 +6,7 @@ struct CatalogCheck {
         let data = try Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1]))
         let catalog = try JSONDecoder().decode(Catalog.self, from: data)
         let picks = ["paprika", "eggs"]
-        precondition(catalog.recipes.count == 24 && catalog.recipes.allSatisfy { (1...20).contains($0.minutes) })
+        precondition(catalog.recipes.count > 200 && catalog.recipes.allSatisfy { (1...20).contains($0.minutes) })
         precondition(catalog.choices(picked: picks) == ["oil", "salt", "rice", "cannedtomatoes"])
         precondition(catalog.matches(picked: picks, confirmed: ["salt"]).almost?.missing == ["oil"])
         precondition(catalog.matches(picked: picks, confirmed: ["oil", "salt"]).complete.map(\.recipe.id) == ["paprika-eier"])

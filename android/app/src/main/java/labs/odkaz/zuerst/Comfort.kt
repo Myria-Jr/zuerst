@@ -18,12 +18,17 @@ internal fun mealSuggestions(
     days: Int,
     vegetarian: Boolean,
     fast: Boolean,
+    taste: JSONObject = JSONObject(),
 ): List<Recipe> {
     require(days in 1..28)
     val candidates =
         catalog.recipes.filter {
-            (!vegetarian || it.items.none { it.id == "tuna" }) && (!fast || it.minutes <= 10)
+            (!vegetarian || it.items.none { it.id == "tuna" }) && (!fast || it.minutes <= 10) &&
+            (taste.optString("diet")!="vegetarian" || it.items.none { it.id=="tuna" }) &&
+            (taste.optString("mode","all")=="all" || it.mode==taste.optString("mode")) &&
+            it.items.none { amount -> taste.optJSONArray("avoids")?.let { a -> (0 until a.length()).any { i -> a.optString(i)==amount.id } }==true }
         }
+    if(candidates.isEmpty()) return emptyList()
     val used = mutableMapOf<String, Int>()
     return (0 until days).map {
         val next =
@@ -51,6 +56,7 @@ internal fun ComfortScreen(
     planning: Boolean,
 ) {
     val context = LocalContext.current
+    val taste=remember {runCatching {JSONObject(context.getSharedPreferences("zuerst-taste",android.content.Context.MODE_PRIVATE).getString("value","{}")?:"{}")}.getOrDefault(JSONObject())}
     val cloud = remember { Cloud(context) }
     val foods = remember { WellnessStore(context).foods }
     val scope = rememberCoroutineScope()
@@ -144,7 +150,7 @@ internal fun ComfortScreen(
                 Text("Höchstens 10 Minuten")
             }
             Button({
-                if (plus) draft = mealSuggestions(catalog, journal.stock, weeks * 7, veggie, fast)
+                if (plus) { draft = mealSuggestions(catalog, journal.stock, weeks * 7, veggie, fast,taste); if(draft.isEmpty()) message="Keine Rezepte für diese Vorlieben. Passe sie unter Rezepte an." }
                 else message = "Dafür ist ein bestätigter Plus-Zugang erforderlich."
             }) {
                 Text("Plan vorschlagen${if(plus)"" else " · Plus"}")

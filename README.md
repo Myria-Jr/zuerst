@@ -1,6 +1,6 @@
 # Zuerst
 
-Deutschsprachige App von Vora (Studio-Arbeitsname im Projekt Odkaz Labs): Wähle bis zu drei Zutaten, bestätige, was du noch da hast, und erhalte ein Gericht für zwei Personen in höchstens 20 Minuten. Web, Android und iOS verwenden denselben Katalog mit 24 Rezepten. Die Kernfunktionen laufen lokal ohne Konto. Eine freiwillige Anmeldung ermöglicht manuelle Cloud-Sicherungen.
+Deutschsprachige App von Vora (Studio-Arbeitsname im Projekt Odkaz Labs): Wähle bis zu drei Zutaten, bestätige, was du noch da hast, und erhalte ein Gericht für zwei Personen in höchstens 20 Minuten. Web, Android und iOS verwenden denselben Katalog mit 216 Rezepten. Die Kernfunktionen laufen lokal ohne Konto. Eine freiwillige Anmeldung ermöglicht manuelle Cloud-Sicherungen.
 
 ## Lokal starten
 
@@ -13,7 +13,13 @@ npm run dev
 
 Öffne [localhost:3000](http://localhost:3000). `npm test` prüft Rezeptkatalog, Suche und Matching. `npm run build` erstellt den statischen Export; `npm start` zeigt diesen Export lokal an.
 
-## Zuerst 1.3
+## Zuerst 1.4
+
+- 216 vollständige lokale Gerichte, zwei Portionen, bis 20 Minuten. 192 neue Originalrezepte mit unterschiedlichen Zubereitungen; Mengen für Dosen sind Abtropfgewichte. Gekochter Reis und Kartoffeln sind ausdrücklich vorgegart.
+- „Dein Geschmack“ unter Rezepte: Lieblingszutaten, Ausschlüsse, vegetarisch sowie Alltag/Comfort Food. Lokal gespeichert; kein Konto nötig. Die automatische Planung berücksichtigt Ausschlüsse und Ausrichtung.
+- 18 recherchierte Creator-Quellen unter Rezeptimport, darunter 12 konkrete Instagram-Reels. Externe Originale haben eigene Zeiten und Portionen; es werden keine fremden Rezepttexte oder Videos kopiert. Ein Reel kann mit vorausgefülltem Link und Titel importiert werden; Zutaten und Schritte bleiben manuell zu prüfen.
+- Auf Heute: Wasser-Schnelleintrag und protokollierte Ernährung. Android zeigt nach Freigabe Schritte/Etagen aus Health Connect; einzelne verweigerte Freigaben sperren andere Messarten nicht. Blutdruck und Blutzucker sind separat freiwillig und zeigen ausschließlich echte Quellen mit Zeit. iOS zeigt Schritte/Etagen über CoreMotion.
+- Browser messen keine Schritte, keinen Blutdruck und keinen Blutzucker. Vorlieben prüfen Zutatenbezeichnungen, keine Allergenspuren oder konkreten Produktetiketten. Rezeptzeiten sind Planungswerte und keine dokumentierten Küchentests.
 
 Hell, Dunkel und System sind kostenlos wählbar und bleiben gespeichert. Essen, Wasser, Bewegung, Küche und Auswertungen besitzen feste Bereichsfarben. Die Android-Navigation verbindet Material-Komponenten mit einer schwebenden, transluzenten Glasfläche und tatsächlicher Hintergrundunschärfe auf unterstützten Geräten. Auf großen Breiten wird sie zur NavigationRail. Die Lizenz der Haze-Bibliothek liegt unter `shared/licenses/haze.txt` sowie `public/licenses/haze.txt`.
 

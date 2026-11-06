@@ -18,6 +18,8 @@ struct Recipe: Decodable, Identifiable {
     let note: String
     let items: [RecipeAmount]
     let steps: [String]
+    let category: String?
+    let mode: String?
 }
 
 struct Candidate {
@@ -32,11 +34,13 @@ struct RecipeMatches {
     let almost: Candidate?
 }
 
+struct RecipeSource: Decodable, Identifiable { let id: String; let title: String; let creator: String; let url: String; let note: String }
 struct Catalog: Decodable {
     let ingredients: [Ingredient]
     let quick: [String]
     let pantry: Set<String>
     let recipes: [Recipe]
+    let sources: [RecipeSource]?
 
     static func load(from bundle: Bundle = .main) throws -> Self {
         guard let url = bundle.url(forResource: "catalog", withExtension: "json") else {

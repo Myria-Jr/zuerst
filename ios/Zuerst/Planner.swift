@@ -5,8 +5,21 @@ struct RecipeLibrary: View {
     let journal: KitchenJournal
     let open: (Recipe) -> Void
     let update: ((inout KitchenJournal) -> Void) -> Void
+    var importRecipe: () -> Void = {}
     @State private var query = ""
     @State private var filter = 0
+    @AppStorage("zuerst-taste") private var tasteJSON = "{}"
+    @State private var editing = false
+    @State private var avoidQuery = ""
+    @State private var limit = 30
+    private var taste: [String:Any] { ((tasteJSON.data(using: .utf8)).flatMap { try? JSONSerialization.jsonObject(with: $0) } as? [String:Any]) ?? [:] }
+    private func ids(_ key: String) -> [String] { taste[key] as? [String] ?? [] }
+    private func option(_ key: String, _ value: Any) { var next = taste; next[key] = value; if let data = try? JSONSerialization.data(withJSONObject: next), let text = String(data: data, encoding: .utf8) { tasteJSON = text }; limit = 30 }
+    private func suits(_ recipe: Recipe) -> Bool {
+        let mode = recipe.mode ?? (["kaesetoast","arme-ritter","paprika-quesadilla","bananen-pancakes","kartoffel-roesti"].contains(recipe.id) ? "comfort" : "balanced")
+        return !recipe.items.contains { ids("avoids").contains($0.id) } && ((taste["diet"] as? String) != "vegetarian" || !recipe.items.contains { $0.id == "tuna" }) && ((taste["mode"] as? String ?? "all") == "all" || mode == (taste["mode"] as? String))
+    }
+    private func score(_ recipe: Recipe) -> Int { recipe.items.filter { ids("likes").contains($0.id) }.count * 10 + recipe.items.filter { journal.stock.contains($0.id) }.count }
     private let filters = ["Alle", "Gemerkt", "Aus Vorrat", "Vegetarisch", "Bis 10 Min."]
     private var matches: [Recipe] {
         catalog.recipes.filter { recipe in
@@ -20,11 +33,20 @@ struct RecipeLibrary: View {
             case 4: matchesFilter = recipe.minutes <= 10
             default: matchesFilter = true
             }
-            return matchesQuery && matchesFilter
+            return matchesQuery && matchesFilter && suits(recipe)
+        }.sorted { a,b in
+            if score(a) != score(b) { return score(a)>score(b) }
+            let aMeal=["Frühstück","Desserts"].contains(a.category ?? "") ? 1 : 0
+            let bMeal=["Frühstück","Desserts"].contains(b.category ?? "") ? 1 : 0
+            if aMeal != bMeal { return aMeal<bMeal }
+            if a.minutes != b.minutes { return a.minutes<b.minutes }
+            return a.name<b.name
         }
     }
     var body: some View {
-        Text("24 Ideen. Zwei Portionen. Höchstens 20 Minuten.").foregroundStyle(Color.primary.opacity(0.7))
+        Text("\(catalog.recipes.count) Ideen. Zwei Portionen. Höchstens 20 Minuten.").foregroundStyle(Color.primary.opacity(0.7))
+        Button("Instagram-Rezepte entdecken & importieren",action:importRecipe).buttonStyle(.bordered).frame(minHeight:48)
+        tastePicker
         TextField("Gericht oder Zutat suchen", text: $query).textFieldStyle(.roundedBorder).frame(minHeight: 44)
         PillLayout {
             ForEach(filters.indices, id: \.self) { index in
@@ -34,8 +56,28 @@ struct RecipeLibrary: View {
         }
         JournalPanel {
             Text("\(matches.count) Rezepte").font(.headline)
-            ForEach(matches) { recipe in JournalRecipeRow(recipe: recipe, journal: journal, open: { open(recipe) }, favorite: { update { $0.favorite(recipe.id) } }) }
+            ForEach(Array(matches.prefix(limit))) { recipe in JournalRecipeRow(recipe: recipe, journal: journal, open: { open(recipe) }, favorite: { update { $0.favorite(recipe.id) } }) }
+            if matches.count > limit { Button("Weitere Rezepte zeigen (\(matches.count-limit))") { limit += 30 }.frame(minHeight: 48) }
             if matches.isEmpty { Text(filter == 1 ? "Tippe bei einem Rezept auf das Herz, um es hier zu merken." : "Kein passendes Rezept. Ändere die Suche oder den Filter.").foregroundStyle(Color.primary.opacity(0.7)) }
+        }
+    }
+    private var tastePicker: some View {
+        JournalPanel(tint: Palette.kitchen) {
+            Text("Dein Geschmack").font(.title2.bold())
+            if !(taste["done"] as? Bool ?? false) || editing {
+                Text("Was isst du gern? Deine Auswahl sortiert die Rezepte. Jederzeit änderbar, nur auf diesem Gerät.")
+                Picker("Ernährungsweise", selection: Binding(get: { taste["diet"] as? String ?? "all" }, set: { option("diet",$0) })) { Text("Alles").tag("all"); Text("Vegetarisch").tag("vegetarian") }.pickerStyle(.menu)
+                Picker("Ausrichtung", selection: Binding(get: { taste["mode"] as? String ?? "all" }, set: { option("mode",$0) })) { Text("Beides").tag("all"); Text("Gemüse & Alltag").tag("balanced"); Text("Comfort Food").tag("comfort") }.pickerStyle(.menu)
+                Text("Das mag ich").font(.headline)
+                PillLayout { ForEach(["pasta","rice","potatoes","chickpeas","tofu","eggs","cheese","mushrooms","broccoli","spinach","paprika","banana"], id: \.self) { id in
+                    Button { option("likes",ids("likes").contains(id) ? ids("likes").filter { $0 != id } : ids("likes") + [id]); option("avoids",ids("avoids").filter { $0 != id }) } label: { Text(catalog.name(id)).padding(.horizontal,16).frame(minHeight:48).background(ids("likes").contains(id) ? Palette.action : Palette.trend,in:.capsule).foregroundStyle(ids("likes").contains(id) ? Palette.onAction : Palette.onTrend) }.buttonStyle(.plain).accessibilityAddTraits(ids("likes").contains(id) ? .isSelected : [])
+                } }
+                TextField("Zutat ausschließen",text:$avoidQuery).textFieldStyle(.roundedBorder).frame(minHeight:48)
+                if !avoidQuery.isEmpty { ForEach(Array(catalog.search(avoidQuery).prefix(4)),id:\.self) { id in Button("\(catalog.name(id)) ausschließen") { option("avoids",Array(Set(ids("avoids") + [id]))); option("likes",ids("likes").filter { $0 != id }); avoidQuery="" }.frame(minHeight:48) } }
+                ForEach(ids("avoids"),id:\.self) { id in Button("\(catalog.name(id)) wieder erlauben") { option("avoids",ids("avoids").filter { $0 != id }) }.frame(minHeight:48) }
+                Text("Filter prüfen Zutatenbezeichnungen, keine Etiketten oder Spuren. Bei Allergien jede Zutat prüfen.").font(.footnote)
+                Button("Meine Rezepte zeigen") { option("done",true); editing=false }.buttonStyle(.borderedProminent).frame(minHeight:48)
+            } else { Text("\(ids("likes").count) Lieblingszutaten · \(ids("avoids").count) ausgeschlossen"); Button("Vorlieben anpassen") { editing=true }.frame(minHeight:48) }
         }
     }
 }

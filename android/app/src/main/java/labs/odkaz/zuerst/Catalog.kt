@@ -7,9 +7,10 @@ import java.util.Locale
 
 internal data class Ingredient(val id: String, val name: String, val aliases: List<String>)
 internal data class Amount(val id: String, val amount: String)
-internal data class Recipe(val id: String, val name: String, val minutes: Int, val note: String, val items: List<Amount>, val steps: List<String>)
+internal data class Recipe(val id: String, val name: String, val minutes: Int, val note: String, val items: List<Amount>, val steps: List<String>, val category: String = "", val mode: String = "balanced")
 internal data class Candidate(val recipe: Recipe, val used: List<String>, val missing: List<String>)
 internal data class Matches(val complete: List<Candidate>, val almost: Candidate?)
+internal data class RecipeSource(val title:String,val creator:String,val url:String,val note:String)
 
 private val diacritics = Regex("\\p{M}+")
 private val spaces = Regex("\\s+")
@@ -18,6 +19,7 @@ private fun normalize(value: String): String = Normalizer.normalize(value.lowerc
 
 internal class Catalog(json: String) {
     private val source = JSONObject(json)
+    val sources = source.optJSONArray("sources")?.let { array -> (0 until array.length()).map { i -> array.getJSONObject(i).let { RecipeSource(it.getString("title"),it.getString("creator"),it.getString("url"),it.getString("note")) } } } ?: emptyList()
     val ingredients = source.getJSONArray("ingredients").map { index ->
         getJSONObject(index).let { Ingredient(it.getString("id"), it.getString("name"), it.getJSONArray("aliases").strings()) }
     }
@@ -29,7 +31,7 @@ internal class Catalog(json: String) {
         val recipe = getJSONObject(index)
         Recipe(recipe.getString("id"), recipe.getString("name"), recipe.getInt("minutes"), recipe.getString("note"),
             recipe.getJSONArray("items").map { item -> getJSONObject(item).let { Amount(it.getString("id"), it.getString("amount")) } },
-            recipe.getJSONArray("steps").strings())
+            recipe.getJSONArray("steps").strings(), recipe.optString("category"), recipe.optString("mode", if(recipe.getString("id") in setOf("kaesetoast","arme-ritter","paprika-quesadilla","bananen-pancakes","kartoffel-roesti")) "comfort" else "balanced"))
     }
 
     fun name(id: String) = byId.getValue(id).name

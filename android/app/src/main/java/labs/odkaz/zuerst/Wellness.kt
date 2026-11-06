@@ -138,6 +138,25 @@ internal fun JSONObject.adult() = journalEnabled() && getJSONObject("profile").o
 
 private fun decimals(value: Double) = String.format(java.util.Locale.GERMAN, "%.1f", value)
 
+@Composable
+internal fun WellnessToday(store:WellnessStore,data:JSONObject,update:(JSONObject)->Unit,open:()->Unit) {
+    val day=LocalDate.now().toString()
+    val drinks=data.optJSONArray("drinks")?.objects()?.filter { it.optString("day")==day && it.optString("kind")=="water" } ?: emptyList()
+    val entries=data.optJSONArray("food")?.objects()?.filter { it.optString("day")==day } ?: emptyList()
+    JournalCard(LocalTones.current.water,LocalTones.current.onWater) {
+        Text("Wasser heute",style=MaterialTheme.typography.titleLarge)
+        Text("${drinks.sumOf { it.optInt("ml") }} ml",style=MaterialTheme.typography.headlineMedium)
+        Button({val next=JSONObject(data.toString());next.getJSONArray("drinks").put(JSONObject().put("id",UUID.randomUUID().toString()).put("kind","water").put("ml",250).put("caffeineMg",0).put("day",day).put("at",Instant.now().toString()).put("name","Wasser"));update(next)}) { Text("+ 250 ml") }
+        TextButton(open) { Text("Getränke ansehen & bearbeiten") }
+    }
+    JournalCard(LocalTones.current.nutrition,LocalTones.current.onNutrition) {
+        Text("Ernährung heute",style=MaterialTheme.typography.titleLarge)
+        if(data.adult() && entries.isNotEmpty()) Text("${decimals(entries.sumOf { entry -> (store.foods.firstOrNull { it.id==entry.optString("foodId") }?.kcal ?: 0.0)*entry.optDouble("grams")/100 })} kcal",style=MaterialTheme.typography.headlineMedium)
+        Text("${entries.size} bestätigte Essenseinträge. Kein geschätzter Tagesbedarf.")
+        TextButton(open) { Text("Essen eintragen") }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun WellnessScreen(store: WellnessStore, data: JSONObject, update: (JSONObject) -> Unit) {

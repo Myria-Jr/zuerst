@@ -1,10 +1,12 @@
 "use client";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useState, useRef, type Dispatch, type SetStateAction } from "react";
 import { Trash2, ArrowUpRight } from "lucide-react";
 import { isSupportedRecipeLink } from "../lib/domain";
 import { ingredients, label, recipes, type Ingredient } from "../lib/recipes";
 import { daysFromToday, type Journal } from "../lib/journal";
 import { createMealPlan } from "../lib/meal-planner";
+import {useTaste} from './taste';
+import recipeSources from '../shared/recipe-sources.json';
 import {
   WellnessCard as Card,
   dateLabel,
@@ -20,6 +22,8 @@ export function SocialRecipes({
   journal,
   setJournal,
 }: WellnessProps & KitchenProps) {
+  const titleRef=useRef<HTMLInputElement>(null);
+  const [sourceMode,setSourceMode]=useState('all');
   const [url, setUrl] = useState(""),
     [title, setTitle] = useState(""),
     [raw, setRaw] = useState(""),
@@ -28,6 +32,7 @@ export function SocialRecipes({
     [message, setMessage] = useState("");
   return (
     <div className="w-stack">
+      <Card tone="trend"><details><summary>Creator-Inspirationen · {recipeSources.length} Originale</summary><div className="w-form"><p>Recherchierte Originale für Alltag und Genuss. Externe Rezepte haben eigene Mengen und Zeiten. Zusätzlich zu 216 lokalen Zuerst-Rezepten. Links öffnen den Creator; es werden keine Instagram-Inhalte im Hintergrund geladen.</p><div className="j-chips" aria-label="Inspirationen filtern">{[['all','Alle'],['balanced','Gemüse & Alltag'],['comfort','Comfort Food']].map(([id,text])=><button key={id} aria-pressed={sourceMode===id} onClick={()=>setSourceMode(id)}>{text}</button>)}</div>{recipeSources.filter(s=>sourceMode==='all'||s.mode===sourceMode).map(source=><div key={source.id}><a className="j-text-button" href={source.url} target="_blank" rel="noopener noreferrer">{source.title} · {source.creator} <ArrowUpRight size={16}/></a><p className="w-small">{source.note}</p>{source.url.includes('instagram.com/reel/')&&<button className="j-text-button" onClick={()=>{setUrl(source.url);setTitle(source.title);setMessage('Original-Link vorgemerkt. Übernimm und prüfe jetzt Zutaten und Schritte.');titleRef.current?.focus();}}>Dieses Reel importieren</button>}</div>)}</div></details></Card>
       <Card tone="kitchen">
         <h2>Aus deinem Feed in deine Küche</h2>
         <p>
@@ -85,6 +90,7 @@ export function SocialRecipes({
           <label>
             Rezeptname
             <input
+              ref={titleRef}
               value={title}
               maxLength={100}
               required
@@ -274,6 +280,7 @@ export function AutoPlanner({
   plus,
   openPlus,
 }: WellnessProps & KitchenProps & { plus: boolean; openPlus: () => void }) {
+  const {taste}=useTaste();
   const [weeks, setWeeks] = useState(1),
     [vegetarian, setVegetarian] = useState(false),
     [fast, setFast] = useState(false),
@@ -331,6 +338,7 @@ export function AutoPlanner({
                 weeks * 7,
                 vegetarian,
                 fast ? 10 : 20,
+                taste,
               ).map((r) => r.id),
             );
           }}

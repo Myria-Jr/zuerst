@@ -103,6 +103,7 @@ struct JournalHome: View {
     let catalog: Catalog
     @AppStorage("kitchen_journal_v1") private var saved = Data()
     @StateObject private var wellness = WellnessStore()
+    @StateObject private var todayMotion = MotionJournal()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var more = "menu"
     @State private var tab = Tab.today
@@ -132,7 +133,7 @@ struct JournalHome: View {
                 .tabItem { Label("Heute", systemImage: "sun.max") }.tag(Tab.today)
             page("Essen") { WellnessView(store: wellness) }
                 .tabItem { Label("Essen", systemImage: "fork.knife") }.tag(Tab.food)
-            page("Rezepte") { RecipeLibrary(catalog: catalog, journal: journal, open: { detail = $0 }, update: update) }
+            page("Rezepte") { RecipeLibrary(catalog: catalog, journal: journal, open: { detail = $0 }, update: update, importRecipe: {more="social";tab = .more}) }
                 .tabItem { Label("Rezepte", systemImage: "book") }.tag(Tab.recipes)
             page("Vorrat") { pantry }
                 .tabItem { Label("Vorrat", systemImage: "basket") }.tag(Tab.stock)
@@ -187,6 +188,27 @@ struct JournalHome: View {
         return VStack(alignment: .leading, spacing: 13) {
             Text(Date.now.formatted(.dateTime.locale(Locale(identifier: "de_DE")).weekday(.wide).day().month(.wide)))
                 .font(.subheadline.weight(.medium)).foregroundStyle(Color.primary.opacity(0.7))
+            if wellness.enabled {
+                JournalPanel(tint: Palette.water) {
+                    Text("Wasser heute").font(.title2.bold())
+                    Text("\(wellness.data.drinks.filter { $0.day == JournalDates.key(.now) && $0.kind == "water" }.reduce(0) { $0 + $1.ml }) ml").font(.largeTitle.bold()).contentTransition(.numericText())
+                    Button("+ 250 ml") { wellness.update { $0.drinks.append(WaterEntry(id: UUID().uuidString, kind:"water",ml:250,caffeineMg:0,day:JournalDates.key(.now),at:ISO8601DateFormatter().string(from:.now),name:"Wasser")) } }.buttonStyle(.bordered).frame(minHeight:48)
+                    Button("Getränke ansehen & bearbeiten") {tab = .food}.frame(minHeight:48)
+                }
+                JournalPanel(tint: Palette.movement) {
+                    Text("Bewegung heute").font(.title2.bold())
+                    Text("\(todayMotion.steps.map(String.init) ?? "–") Schritte · \(todayMotion.floors.map(String.init) ?? "–") Etagen").font(.title2.bold()).contentTransition(.numericText())
+                    Text(todayMotion.message).font(.footnote)
+                    Button("CoreMotion verbinden / aktualisieren") { todayMotion.read() }.buttonStyle(.bordered).frame(minHeight:48)
+                }
+                JournalPanel(tint: Palette.nutrition) {
+                    let entries=wellness.data.food.filter { $0.day==JournalDates.key(.now) }
+                    Text("Ernährung heute").font(.title2.bold())
+                    if wellness.adult && !entries.isEmpty { Text("\(entries.reduce(0.0) { sum,e in sum + (wellness.foods.first { $0.id==e.foodId }?.per100g.energyKcal ?? 0)*e.grams/100 },specifier:"%.0f") kcal").font(.largeTitle.bold()) }
+                    Text("\(entries.count) bestätigte Essenseinträge. Kein geschätzter Tagesbedarf.")
+                    Button("Essen eintragen") {tab = .food}.frame(minHeight:48)
+                }
+            }
             JournalPanel(tint: Palette.nutrition) { Text("Gut essen. Gut für dich.").font(.title2.bold()); Text("Essen und Wasser freiwillig lokal festhalten. Ohne Zielvorgaben."); Button("Essen eintragen") { tab = .food }.buttonStyle(.borderedProminent).frame(minHeight: 48) }
             if !journal.name.isEmpty { Text("Hallo, \(journal.name)").font(.title2.bold()) }
             JournalPanel(tint: Palette.kitchen) {
