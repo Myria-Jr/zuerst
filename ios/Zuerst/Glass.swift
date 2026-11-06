@@ -72,8 +72,8 @@ struct MeshBackdrop: View {
             if reduceTransparency {
                 Color(uiColor: .systemGroupedBackground)
             } else {
-                TimelineView(.animation(minimumInterval: 1 / 24, paused: reduceMotion)) { time in
-                    let seconds = reduceMotion ? 0 : time.date.timeIntervalSince(origin)
+                TimelineView(.explicit([origin])) { _ in
+                    let seconds = 0.0
                     let x = Float(sin(seconds * 0.29)) * 0.12
                     let y = Float(cos(seconds * 0.23)) * 0.09
                     MeshGradient(width: 3, height: 3, points: [

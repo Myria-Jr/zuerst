@@ -48,14 +48,19 @@ import {
 } from "../lib/journal";
 import { authRequest, backupRequest, type Account } from "../lib/cloud";
 import "./journal.css";
+import {useWellness,WellnessSummary,FoodJournal,Insights,HealthDetails,Privacy} from "./wellness";
+import {SocialRecipes,AutoPlanner} from "./recipe-import";
+import {PlusPage,useEntitlement} from "./plus";
+import {AppearancePicker} from "./appearance";
 
-type Tab = "today" | "recipes" | "stock" | "plan" | "history" | "profile";
+type Tab = "today" | "food" | "recipes" | "stock" | "more" | "plan" | "history" | "profile" | "health" | "privacy" | "social" | "plus" | "insights" | "autoplan";
+const hiddenTitles:Partial<Record<Tab,string>>={plan:"Plan & Einkauf",history:"Kochverlauf",profile:"Dein Zuerst",health:"Gesundheitsdetails",privacy:"Darstellung & Datenschutz",social:"Rezeptimport",plus:"Zuerst Plus",insights:"Auswertungen",autoplan:"Automatische Planung"};
 const tabs = [
   { id: "today", title: "Heute", icon: Sun },
+  { id: "food", title: "Essen", icon: Utensils },
   { id: "recipes", title: "Rezepte", icon: BookOpen },
   { id: "stock", title: "Vorrat", icon: ShoppingBasket },
-  { id: "plan", title: "Plan", icon: CalendarDays },
-  { id: "history", title: "Verlauf", icon: ChartNoAxesColumn },
+  { id: "more", title: "Mehr", icon: Plus },
 ] as const;
 const dateLabel = (day: string, short = false) =>
   new Date(day + "T12:00:00").toLocaleDateString(
@@ -91,6 +96,9 @@ export default function JournalApp() {
   const [review, setReview] = useState<Ingredient[] | null>(null);
   const [notice, setNotice] = useState("");
   const [account, setAccount] = useState<Account | null>(null);
+  const wellness=useWellness();
+  const entitlement=useEntitlement(account);
+  const hasPlus=!!entitlement.value?.plus;
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [busy, setBusy] = useState(false);
   const [restore, setRestore] = useState<Journal>();
@@ -120,12 +128,14 @@ export default function JournalApp() {
       );
     }
     const initialTab = new URLSearchParams(location.search).get("tab");
-    if (initialTab === "history" || initialTab === "profile")
-      setTab(initialTab);
+    if (initialTab && [...tabs.map(t=>t.id),...Object.keys(hiddenTitles)].includes(initialTab)) setTab(initialTab as Tab);
+    const pop=()=>{const id=new URLSearchParams(location.search).get("tab")??"today";setTab(([...tabs.map(t=>t.id),...Object.keys(hiddenTitles)].includes(id)?id:"today") as Tab);};
+    window.addEventListener("popstate",pop);
     setLoaded(true);
     authRequest("get-session")
       .then((data) => setAccount(data?.user ?? null))
       .catch(() => {});
+    return ()=>window.removeEventListener("popstate",pop);
   }, []);
   useEffect(() => {
     if (storageReady) {
@@ -149,7 +159,10 @@ export default function JournalApp() {
     else modal.current?.close();
   }, [detail, bon, restore]);
   function navigate(next: Tab) {
-    setTab(next);
+    const update=()=>setTab(next);
+    const transition=(document as Document & {startViewTransition?:(update:()=>void)=>unknown}).startViewTransition;
+    if(transition&&!matchMedia("(prefers-reduced-motion: reduce)").matches) transition.call(document,update);else update();
+    const url=new URL(location.href);url.searchParams.set("tab",next);history.pushState(null,"",url);
     setQuery("");
     setFilter("all");
     window.scrollTo(0, 0);
@@ -335,7 +348,7 @@ export default function JournalApp() {
         {tabs.map((item) => (
           <button
             key={item.id}
-            aria-current={tab === item.id ? "page" : undefined}
+            aria-current={(tab === item.id || item.id === "more" && !tabs.some(t=>t.id===tab)) ? "page" : undefined}
             onClick={() => navigate(item.id)}
           >
             <span>
@@ -348,9 +361,7 @@ export default function JournalApp() {
       <main className="j-main">
         <div className="j-page-title">
           <h1 ref={heading} tabIndex={-1}>
-            {tab === "profile"
-              ? "Dein Zuerst"
-              : tabs.find((t) => t.id === tab)?.title}
+            {hiddenTitles[tab] ?? tabs.find((t) => t.id === tab)?.title}
           </h1>
           {tab === "today" && (
             <span className="j-date">{dateLabel(dayKey())}</span>
@@ -360,8 +371,24 @@ export default function JournalApp() {
           <div className="j-skeleton" aria-label="Dein Journal wird geladen" />
         ) : (
           <>
+            {hasPlus&&entitlement.value?.mode==="test"&&<p role="status" className="w-feedback">Sandbox · Plus-Testzugang. Keine Live-Freischaltung.</p>}
+            {wellness.error&&<p role="alert" className="w-feedback">{wellness.error}</p>}
+            {tab === "food"&&wellness.ready&&<FoodJournal state={wellness.state} setState={wellness.setState}/>}
+            {tab === "insights"&&<Insights state={wellness.state} plus={hasPlus} openPlus={()=>navigate("plus")}/>}
+            {tab === "health"&&<HealthDetails/>}
+            {tab === "privacy"&&<Privacy state={wellness.state} setState={wellness.setState} reset={wellness.reset}/>}
+            {tab === "social"&&<SocialRecipes state={wellness.state} setState={wellness.setState} journal={state} setJournal={setState}/>}
+            {tab === "autoplan"&&<AutoPlanner state={wellness.state} setState={wellness.setState} journal={state} setJournal={setState} plus={hasPlus} openPlus={()=>navigate("plus")}/>}
+            {tab === "plus"&&<PlusPage account={account} state={wellness.state} onLogin={()=>navigate("profile")} entitlement={entitlement.value} refresh={entitlement.setValue}/>}
+            {tab === "more"&&<div className="w-menu">{([
+              ["plan","Plan & Einkauf","kitchen",CalendarDays],["autoplan","Automatisch planen","kitchen",CalendarDays],
+              ["history","Kochverlauf","trend",ChartNoAxesColumn],["insights","Auswertungen","trend",ChartNoAxesColumn],
+              ["health","Gesundheitsdetails","movement",Heart],["social","Rezept importieren","kitchen",BookOpen],
+              ["plus","Zuerst Plus","trend",Plus],["privacy","Darstellung & Datenschutz","water",UserRound]
+            ] as const).map(([id,title,tone,Icon])=><button className={"w-tone-"+tone} key={id} onClick={()=>navigate(id)}><Icon size={26}/><span>{title}</span></button>)}</div>}
             {tab === "today" && (
               <div className="j-dashboard">
+                <WellnessSummary state={wellness.state} open={()=>navigate("food")}/>
                 <Panel className="j-feature">
                   <div className="j-feature-heading">
                     <span className="j-orb">
@@ -380,7 +407,7 @@ export default function JournalApp() {
                       : "Eine Zutat reicht. Finde in wenigen Schritten dein nächstes Gericht."}
                   </p>
                   <a
-                    className="j-primary"
+                    className="j-secondary"
                     href={
                       ready[0] ? `/kochen/?recipe=${ready[0].id}` : "/kochen/"
                     }
@@ -492,6 +519,8 @@ export default function JournalApp() {
                 )}
               </div>
             )}
+            {tab === "recipes" && <button className="j-secondary" onClick={()=>navigate("social")}>Instagram- oder TikTok-Rezept importieren</button>}
+            {tab === "plan" && wellness.state.shoppingText.length>0&&<Panel><h2>Eigene Einkaufszutaten</h2>{wellness.state.shoppingText.map(text=><label className="w-list-row" key={text}><input type="checkbox" onChange={()=>wellness.setState(s=>({...s,shoppingText:s.shoppingText.filter(t=>t!==text)}))}/>{text}</label>)}</Panel>}
             {tab === "recipes" && (
               <>
                 <p className="j-lead">
@@ -940,6 +969,7 @@ export default function JournalApp() {
                 </Panel>
               </>
             )}
+            {tab === "profile" && <><AppearancePicker/><button className="j-secondary" onClick={()=>navigate("privacy")}>Speicher & Datenschutz</button><button className="j-secondary" onClick={()=>navigate("plus")}>Zuerst Plus</button></>}
             {tab === "profile" && (
               <>
                 <Panel>
@@ -1195,7 +1225,7 @@ export default function JournalApp() {
                     den nativen Apps und ein ruhiger Blick auf deine Kochwoche.
                   </p>
                   <p className="j-muted">
-                    Eine Marke von Odkaz Labs. Version 1.2.2.
+                    Von Vora · ein Projekt von Odkaz Labs. Version 1.3.0.
                   </p>
                   <a
                     className="j-link"

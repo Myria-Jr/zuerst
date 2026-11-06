@@ -6,14 +6,14 @@ plugins {
 
 android {
     namespace = "labs.odkaz.zuerst"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "labs.odkaz.zuerst"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.2.2"
+        versionCode = 6
+        versionName = "1.3.0"
         if (!providers.gradleProperty("zuerstAllAbis").isPresent) {
             ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         }
@@ -49,6 +49,8 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.android.gms:play-services-mlkit-image-labeling:16.0.8")
+    implementation("androidx.health.connect:connect-client:1.1.0")
     implementation("dev.chrisbanes.haze:haze:1.1.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")

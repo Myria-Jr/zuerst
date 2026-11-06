@@ -29,8 +29,8 @@ internal fun RecipeLibrary(catalog: Catalog, journal: Journal, open: (Recipe) ->
     JournalTitle("Rezepte")
     Text("24 Ideen. Zwei Portionen. Höchstens 20 Minuten.", color = MaterialTheme.colorScheme.onSurfaceVariant)
     OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text("Gericht oder Zutat suchen") }, leadingIcon = { Icon(Icons.Default.Search, null) }, singleLine = true)
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        listOf("Alle", "Gemerkt", "Aus Vorrat", "Vegetarisch", "Bis 10 Min.").forEachIndexed { index, title -> FilterChip(filter == index, { filter = index }, { Text(title) }, modifier = Modifier.heightIn(min = 48.dp)) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        listOf("Alle", "Gemerkt", "Aus Vorrat", "Vegetarisch", "Bis 10 Min.").forEachIndexed { index, title -> ZuerstFilter(title,filter == index) { filter = index } }
     }
     val found = catalog.recipes.filter { recipe ->
         (query.isBlank() || recipe.name.contains(query.trim(), true) || recipe.items.any { catalog.name(it.id).contains(query.trim(), true) }) &&

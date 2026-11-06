@@ -26,11 +26,11 @@ struct RecipeLibrary: View {
     var body: some View {
         Text("24 Ideen. Zwei Portionen. Höchstens 20 Minuten.").foregroundStyle(Color.primary.opacity(0.7))
         TextField("Gericht oder Zutat suchen", text: $query).textFieldStyle(.roundedBorder).frame(minHeight: 44)
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) { ForEach(filters.indices, id: \.self) { index in
-                Button { filter = index } label: { Text(filters[index]).padding(.horizontal, 13).frame(minHeight: 44).background(filter == index ? Color.accentColor.opacity(0.18) : Color(uiColor: .tertiarySystemGroupedBackground), in: .capsule) }
+        PillLayout {
+            ForEach(filters.indices, id: \.self) { index in
+                Button { filter = index } label: { Text(filters[index]).padding(.horizontal, 17).frame(minHeight: 48).background(filter == index ? Palette.action : Palette.trend, in: .capsule).foregroundStyle(filter == index ? Palette.onAction : Palette.onTrend) }
                     .buttonStyle(.plain).accessibilityAddTraits(filter == index ? .isSelected : [])
-            } }
+            }
         }
         JournalPanel {
             Text("\(matches.count) Rezepte").font(.headline)

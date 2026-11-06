@@ -102,6 +102,9 @@ struct KitchenJournal: Codable {
 struct JournalHome: View {
     let catalog: Catalog
     @AppStorage("kitchen_journal_v1") private var saved = Data()
+    @StateObject private var wellness = WellnessStore()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var more = "menu"
     @State private var tab = Tab.today
     @State private var receipt = false
     @State private var about = false
@@ -110,7 +113,7 @@ struct JournalHome: View {
     @State private var cooking: CookingSession?
     @State private var removal: MealEntry?
 
-    private enum Tab: Hashable { case today, recipes, stock, plan, history }
+    private enum Tab: Hashable { case today, food, recipes, stock, more }
     private struct CookingSession: Identifiable {
         let id = UUID()
         let preset: [String]
@@ -127,14 +130,14 @@ struct JournalHome: View {
         TabView(selection: $tab) {
             page("Heute") { today }
                 .tabItem { Label("Heute", systemImage: "sun.max") }.tag(Tab.today)
+            page("Essen") { WellnessView(store: wellness) }
+                .tabItem { Label("Essen", systemImage: "fork.knife") }.tag(Tab.food)
             page("Rezepte") { RecipeLibrary(catalog: catalog, journal: journal, open: { detail = $0 }, update: update) }
                 .tabItem { Label("Rezepte", systemImage: "book") }.tag(Tab.recipes)
             page("Vorrat") { pantry }
                 .tabItem { Label("Vorrat", systemImage: "basket") }.tag(Tab.stock)
-            page("Plan") { WeeklyPlanner(catalog: catalog, journal: journal, open: { detail = $0 }, select: { plannedDay = $0; tab = .recipes }, update: update) }
-                .tabItem { Label("Plan", systemImage: "calendar") }.tag(Tab.plan)
-            page("Verlauf") { history }
-                .tabItem { Label("Verlauf", systemImage: "chart.bar.xaxis") }.tag(Tab.history)
+            page("Mehr") { moreContent }
+                .tabItem { Label("Mehr", systemImage: "square.grid.2x2") }.tag(Tab.more)
         }
         .sheet(isPresented: $receipt) {
             ReceiptView(catalog: catalog) { ids in
@@ -149,14 +152,14 @@ struct JournalHome: View {
         .sheet(item: $detail) { recipe in
             RecipePage(catalog: catalog, recipe: recipe, journal: journal, initialDay: plannedDay, update: update) {
                 update { $0.meals.insert(MealEntry(name: recipe.name, date: .now, ingredients: recipe.items.map(\.id)), at: 0) }
-                detail = nil; tab = .history
+                detail = nil; more = "history"; tab = .more
             }
         }
         .fullScreenCover(item: $cooking) { session in
             Kitchen(catalog: catalog, preset: session.preset, stock: session.stock, onClose: { cooking = nil }) { recipe in
                 guard cooking?.id == session.id else { return }
                 update { $0.meals.insert(MealEntry(name: recipe.name, date: .now, ingredients: recipe.items.map(\.id)), at: 0) }
-                tab = .history
+                more = "history"; tab = .more
                 cooking = nil
             }
         }
@@ -171,7 +174,7 @@ struct JournalHome: View {
                     .frame(maxWidth: .infinity)
             }
             .scrollDismissesKeyboard(.interactively)
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Palette.canvas)
             .navigationTitle(title)
             .toolbar { ToolbarItem(placement: .topBarTrailing) {
                 Button { about = true } label: { Label("Profil und Sicherung", systemImage: "person.crop.circle").labelStyle(.iconOnly) }
@@ -184,8 +187,9 @@ struct JournalHome: View {
         return VStack(alignment: .leading, spacing: 13) {
             Text(Date.now.formatted(.dateTime.locale(Locale(identifier: "de_DE")).weekday(.wide).day().month(.wide)))
                 .font(.subheadline.weight(.medium)).foregroundStyle(Color.primary.opacity(0.7))
+            JournalPanel(tint: Palette.nutrition) { Text("Gut essen. Gut für dich.").font(.title2.bold()); Text("Essen und Wasser freiwillig lokal festhalten. Ohne Zielvorgaben."); Button("Essen eintragen") { tab = .food }.buttonStyle(.borderedProminent).frame(minHeight: 48) }
             if !journal.name.isEmpty { Text("Hallo, \(journal.name)").font(.title2.bold()) }
-            JournalPanel(tint: .mint) {
+            JournalPanel(tint: Palette.kitchen) {
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .center, spacing: 18) { suggestion(ready.first); readyCount(ready.count) }
                     VStack(alignment: .leading, spacing: 10) { suggestion(ready.first); readyCount(ready.count) }
@@ -202,7 +206,7 @@ struct JournalHome: View {
                 VStack(spacing: 9) { stockMetric; historyMetric }
             }
             let soon = stock.filter { journal.expiry[$0].map { $0 <= JournalDates.key(Calendar.current.date(byAdding: .day, value: 2, to: .now)!) } ?? false }
-            if !soon.isEmpty { JournalPanel(tint: .orange) {
+            if !soon.isEmpty { JournalPanel(tint: Palette.nutrition) {
                 Text("Zuerst aufbrauchen").font(.headline)
                 ForEach(soon, id: \.self) { id in Text("\(catalog.name(id)) · \(journal.expiry[id] ?? "")") }
                 Text("Nach deinen eingetragenen Daten. Prüfe Lebensmittel vor dem Verwenden.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
@@ -212,9 +216,9 @@ struct JournalHome: View {
                 let planned = catalog.recipes.first { recipe in journal.plans.contains { $0.day == JournalDates.key(.now) && $0.recipeId == recipe.id } }
                 if let planned { Button(planned.name) { detail = planned }.buttonStyle(.plain) }
                 else { Text("Ein kleiner Plan macht den nächsten Einkauf leichter.").foregroundStyle(Color.primary.opacity(0.7)) }
-                Button("Plan ansehen") { tab = .plan }.buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                Button("Plan ansehen") { more = "plan"; tab = .more }.buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
             }
-            JournalPanel(tint: .indigo) {
+            JournalPanel(tint: Palette.movement) {
                 Label("Vom Einkauf in den Vorrat", systemImage: "receipt").font(.headline)
                 Text("Fotografiere einen Kassenbon und prüfe die erkannten Zutaten.").foregroundStyle(Color.primary.opacity(0.7))
                 Button("Bon erfassen") { receipt = true }
@@ -224,11 +228,11 @@ struct JournalHome: View {
     }
 
     private var stockMetric: some View {
-        metric("Vorrat", value: stock.count, detail: "Zutaten", icon: "basket", tint: .cyan) { tab = .stock }
+        metric("Vorrat", value: stock.count, detail: "Zutaten", icon: "basket", tint: Palette.kitchen) { tab = .stock }
     }
 
     private var historyMetric: some View {
-        metric("Gekocht", value: journal.days().reduce(0) { $0 + $1.count }, detail: "letzte 7 Tage", icon: "chart.bar", tint: .purple) { tab = .history }
+        metric("Gekocht", value: journal.days().reduce(0) { $0 + $1.count }, detail: "letzte 7 Tage", icon: "chart.bar", tint: Palette.trend) { more = "history"; tab = .more }
     }
 
     private func metric(_ title: String, value: Int, detail: String, icon: String, tint: Color, open: @escaping () -> Void) -> some View {
@@ -295,7 +299,7 @@ struct JournalHome: View {
         let variety = Set(state.meals.filter { dates.contains(Calendar.current.startOfDay(for: $0.date)) }.flatMap { $0.ingredients ?? [] })
             .subtracting(catalog.pantry).count
         return VStack(alignment: .leading, spacing: 13) {
-            JournalPanel(tint: .purple) {
+            JournalPanel(tint: Palette.trend) {
                 Text("Gerichte · letzte 7 Tage").font(.headline)
                 Text("\(total)").font(.largeTitle.bold()).monospacedDigit()
                 if total == 0 {
@@ -308,7 +312,7 @@ struct JournalHome: View {
                         .chartYAxis(.hidden).frame(height: 112)
                 }
             }
-            if total > 0 { JournalPanel(tint: .teal) {
+            if total > 0 { JournalPanel(tint: Palette.water) {
                 Text("Zutatenvielfalt · letzte 7 Tage").font(.headline)
                 Text("\(variety)").font(.largeTitle.bold()).monospacedDigit()
                 Text("Verschiedene Zutaten in deinen eingetragenen Rezepten, ohne Grundzutaten.").foregroundStyle(Color.primary.opacity(0.7))
@@ -337,6 +341,25 @@ struct JournalHome: View {
         } message: { meal in Text(meal.name) }
     }
 
+    @ViewBuilder private var moreContent: some View {
+        if more != "menu" { Button("Zurück zu Mehr") { more = "menu" }.frame(minHeight: 48) }
+        switch more {
+        case "plan":
+            WeeklyPlanner(catalog: catalog, journal: journal, open: { detail = $0 }, select: { plannedDay = $0; tab = .recipes }, update: update)
+            if !wellness.data.shoppingText.isEmpty { JournalPanel { Text("Eigene Einkaufszutaten").font(.headline); ForEach(wellness.data.shoppingText, id: \.self) { text in Button("Erledigt: \(text)") { wellness.update { $0.shoppingText.removeAll { $0 == text } } }.frame(minHeight: 48) } } }
+        case "history": history
+        case "insights": ComfortView(catalog: catalog, store: wellness, journal: journal, update: update, planning: false)
+        case "autoplan": ComfortView(catalog: catalog, store: wellness, journal: journal, update: update, planning: true)
+        case "privacy": WellnessPrivacy(store: wellness)
+        case "social": SocialRecipesView(catalog: catalog, store: wellness, journal: journal, update: update)
+        case "plus": JournalPanel(tint: Palette.trend) { Text("Zuerst Plus").font(.title2.bold()); Text("30/90-Tage-Vergleiche, automatische Planung für bis zu vier Wochen, Vorlagen und gemeinsamer Einkauf. Gratisfunktionen bleiben ohne Konto nutzbar."); Text("1 € monatlich · 5 € jährlich · 10 € einmalig für die Laufzeit des Produkts. Alle Varianten haben dieselben Funktionen. Keine kostenpflichtige Cloud-KI."); Text("Plus-Vorschau · native Käufe noch nicht erhältlich. Eigene Käufe ab 18. Für die App-Store-Veröffentlichung wird eine Store-Zahlungsanbindung benötigt.") }
+        default:
+            JournalPanel(tint: Palette.kitchen) { Button("Plan & Einkauf") { more = "plan" }.frame(minHeight: 48); Button("Rezept importieren") { more = "social" }.frame(minHeight: 48) }
+            JournalPanel(tint: Palette.trend) { Button("Automatisch planen") { more = "autoplan" }.frame(minHeight: 48); Button("Auswertungen") { more = "insights" }.frame(minHeight: 48); Button("Kochverlauf") { more = "history" }.frame(minHeight: 48); Button("Zuerst Plus") { more = "plus" }.frame(minHeight: 48) }
+            JournalPanel(tint: Palette.water) { Button("Darstellung & Datenschutz") { more = "privacy" }.frame(minHeight: 48) }
+        }
+    }
+
     private func update(_ change: (inout KitchenJournal) -> Void) {
         var state = journal
         change(&state)
@@ -345,16 +368,16 @@ struct JournalHome: View {
 }
 
 struct JournalPanel<Content: View>: View {
-    var tint: Color = .clear
+    var tint: Color = Palette.card
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 9, content: content)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(17)
+            .foregroundStyle(Palette.foreground(tint))
             .background {
-                RoundedRectangle(cornerRadius: 25).fill(Color(uiColor: .secondarySystemGroupedBackground))
-                    .overlay { RoundedRectangle(cornerRadius: 25).fill(tint.opacity(0.11)) }
+                RoundedRectangle(cornerRadius: 25).fill(tint)
             }
     }
 }

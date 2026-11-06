@@ -56,6 +56,7 @@ internal fun Profile(catalog: Catalog, journal: Journal, update: (Journal) -> Un
             Journal.parse(source, catalog)
         }.onSuccess { restore = it }.onFailure { message = it.message?.takeIf { text -> text.length < 140 } ?: "Das ist keine gültige Zuerst-Sicherung." }
     }
+    AppearancePicker()
     JournalCard {
         Text("Ganz du", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         OutlinedTextField(journal.name, { update(journal.copy(name = it.take(40))) }, Modifier.fillMaxWidth(), label = { Text("Dein Name") }, singleLine = true)
@@ -93,7 +94,7 @@ internal fun Profile(catalog: Catalog, journal: Journal, update: (Journal) -> Un
     JournalCard {
         Text("Über Zuerst", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("Dein Begleiter für Einkauf, Vorrat und selbst gekochte Gerichte. Bonfotos werden auf diesem Gerät gelesen und anschließend verworfen. Die Cloud-Sicherung ist freiwillig. Deine Anmeldung wird mit dem Android Keystore verschlüsselt gespeichert.")
-        Text("Eine Marke von Odkaz Labs. Version 1.2.2.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Von Vora · ein Projekt von Odkaz Labs. Version 1.3.0.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     restore?.let { backup -> AlertDialog(onDismissRequest = { restore = null }, title = { Text("Sicherung wiederherstellen?") }, text = { Text("Du übernimmst ${backup.stock.size} Vorratszutaten, ${backup.meals.size} Kocheinträge und ${backup.plans.size} geplante Gerichte. Deine lokalen Daten werden ersetzt. Exportiere sie vorher, wenn du sie behalten möchtest.") },
         confirmButton = { TextButton({ update(backup); restore = null; message = "Sicherung wiederhergestellt." }) { Text("Lokale Daten ersetzen") } }, dismissButton = { TextButton({ restore = null }) { Text("Abbrechen") } }) }

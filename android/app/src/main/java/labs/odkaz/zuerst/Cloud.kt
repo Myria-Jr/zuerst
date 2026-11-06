@@ -82,6 +82,11 @@ internal class Cloud(context: Context) {
         } finally { connection.disconnect() }
     }
 
+    suspend fun plus(): Boolean = withContext(Dispatchers.IO) {
+        val status=JSONObject(request("https://zuerst.vercel.app/api/billing?action=status"))
+        val entitlement=JSONObject(request("https://zuerst.vercel.app/api/billing?action=entitlement"))
+        status.optBoolean("ready") && entitlement.optBoolean("plus") && status.optString("mode")==entitlement.optString("mode")
+    }
     suspend fun session(): Account? = withContext(Dispatchers.IO) {
         if (cookie() == null) return@withContext null
         val source = request("$auth/get-session")

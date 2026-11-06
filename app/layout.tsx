@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./style.css";
+import "./expressive.css";
+import { themeBootstrap } from '../lib/appearance';
+import { ThemeObserver } from './appearance';
 
 export const metadata: Metadata = {
   title: "Zuerst – Deine Küche. Dein Rhythmus.",
@@ -12,14 +15,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f8fc",
-  colorScheme: "light",
+  themeColor: [{ media: '(prefers-color-scheme: light)', color: '#faf8f3' }, { media: '(prefers-color-scheme: dark)', color: '#17151b' }],
+  colorScheme: "light dark",
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="de">
-      <body>{children}</body>
+    <html lang="de" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{__html:themeBootstrap}} /></head>
+      <body><ThemeObserver />{children}</body>
     </html>
   );
 }
