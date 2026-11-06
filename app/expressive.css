@@ -16,6 +16,9 @@
   --movement:#124f42;--on-movement:#baf3dc;--nutrition:#633a28;--on-nutrition:#ffe2c7;--kitchen:#354a1c;--on-kitchen:#ddf5b7;--water:#174f72;--on-water:#d8f0ff;--trend:#4d3071;--on-trend:#edddff;--aubergine:#382243;--pistachio-soft:#2c3b1c;--focus:#d1a3ff;
 }
 :root[data-theme="light"] { color-scheme:light; }
+.pill:not(:disabled):hover {background:var(--soft);border-color:var(--stroke);}
+.pill-check {color:var(--on-kitchen);}
+.download-text {color:var(--action);}
 :root body { background:var(--canvas);color:var(--text); }
 :root .journal-app { --j-bg:var(--canvas);--j-card:var(--card);--j-ink:var(--text);--j-muted:var(--subtext);--j-line:var(--stroke);--j-accent:var(--action);--j-button:var(--action);--j-on-button:var(--on-action);--j-mint:var(--kitchen);--j-lavender:var(--trend);--j-soft:var(--soft);color-scheme:inherit; }
 :root .journal-app .j-nav { background:var(--glass);border-color:var(--stroke); }

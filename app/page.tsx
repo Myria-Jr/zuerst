@@ -1225,7 +1225,7 @@ export default function JournalApp() {
                     den nativen Apps und ein ruhiger Blick auf deine Kochwoche.
                   </p>
                   <p className="j-muted">
-                    Von Vora · ein Projekt von Odkaz Labs. Version 1.3.0.
+                    Von Vora · ein Projekt von Odkaz Labs. Version 1.3.1.
                   </p>
                   <a
                     className="j-link"

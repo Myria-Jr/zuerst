@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -32,6 +33,7 @@ internal fun GlassNavigation(
 ) {
     val shape = RoundedCornerShape(32.dp)
     val colors = MaterialTheme.colorScheme
+    val iconOnly = LocalDensity.current.fontScale > 1.15f
     val glass =
         modifier
             .shadow(12.dp, shape, ambientColor = Color(0x1A302338), spotColor = Color(0x29302338))
@@ -74,8 +76,8 @@ internal fun GlassNavigation(
                 NavigationRailItem(
                     selected = selected == index,
                     onClick = { onSelect(index) },
-                    icon = { Icon(destination.icon, null) },
-                    label = { Text(destination.label) },
+                    icon = { Icon(destination.icon, if(iconOnly) destination.label else null) },
+                    label = if(iconOnly) null else ({ Text(destination.label) }),
                     modifier = Modifier.padding(vertical = 5.dp),
                 )
             }
@@ -91,8 +93,8 @@ internal fun GlassNavigation(
                 NavigationBarItem(
                     selected = selected == index,
                     onClick = { onSelect(index) },
-                    icon = { Icon(destination.icon, null) },
-                    label = { Text(destination.label) },
+                    icon = { Icon(destination.icon, if(iconOnly) destination.label else null) },
+                    label = if(iconOnly) null else ({ Text(destination.label) }),
                 )
             }
         }
