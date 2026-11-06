@@ -31,6 +31,18 @@ internal fun SocialRecipes(
     var steps by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     val tones = LocalTones.current
+    var showSources by remember {mutableStateOf(false)}
+    JournalCard(tones.trend,tones.onTrend) {
+        TextButton({showSources=!showSources}) {Text("Creator-Inspirationen · ${catalog.sources.size} Originale")}
+        if(showSources) {
+        Text("Recherchierte Originale für Alltag und Genuss. Externe Mengen und Zeiten gelten beim Creator. Zusätzlich zu ${catalog.recipes.size} lokalen Zuerst-Rezepten.")
+        catalog.sources.forEach { source ->
+            TextButton({context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(source.url)))}) { Text("${source.title} · ${source.creator}") }
+            Text(source.note,style=MaterialTheme.typography.bodySmall)
+            if(source.url.contains("instagram.com/reel/")) TextButton({url=source.url;title=source.title;showSources=false;message="Original-Link vorgemerkt. Zutaten und Schritte übernehmen und prüfen."}) {Text("Dieses Reel importieren")}
+        }
+        }
+    }
     JournalCard(tones.kitchen, tones.onKitchen) {
         Text("Aus deinem Feed in deine Küche", style = MaterialTheme.typography.titleLarge)
         Text(

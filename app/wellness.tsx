@@ -119,9 +119,13 @@ export function useWellness() {
 export function WellnessSummary({
   state,
   open,
+  health,
+  setState,
 }: {
   state: Wellness;
   open: () => void;
+  health: () => void;
+  setState: Setter;
 }) {
   const enabled = canJournal(state),
     water = state.drinks
@@ -159,6 +163,7 @@ export function WellnessSummary({
           <small>
             {enabled ? "Heute eingetragen" : "Journal noch nicht aktiviert"}
           </small>
+          <button className="j-text-button" onClick={()=>enabled?setState(s=>({...s,drinks:[...s.drinks,{id:crypto.randomUUID(),kind:'water',ml:250,caffeineMg:0,day:dayKey(),at:new Date().toISOString(),name:'Wasser'}]})):open()}>{enabled?'+ 250 ml':'Journal aktivieren'}</button>
         </div>
         <div className="w-metric w-tone-movement">
           <span className="w-label">
@@ -167,8 +172,10 @@ export function WellnessSummary({
           </span>
           <strong>–</strong>
           <small>Gerätedaten in der nativen App verbinden</small>
+          <button className="j-text-button" onClick={health}>Schritte & Etagen</button>
         </div>
       </div>
+      {enabled&&<WellnessCard tone="nutrition"><h2>Ernährung heute</h2>{isAdult(state)&&state.food.some(e=>e.day===dayKey())?<strong className="w-number">{num(totals(state,dayKey()).energyKcal)} kcal</strong>:<p>{state.food.filter(e=>e.day===dayKey()).length} bestätigte Essenseinträge</p>}<p>Nur protokollierte Mengen. Keine Schätzung deines Tagesbedarfs.</p><button className="j-text-button" onClick={open}>Essen & Getränke öffnen</button></WellnessCard>}
     </div>
   );
 }
@@ -838,6 +845,7 @@ export function HealthDetails() {
           Gerätedaten werden in den nativen Apps verbunden. Hier wird kein Wert
           geschätzt oder als null dargestellt.
         </p>
+        <a className="j-primary" href="/downloads/zuerst-android.apk">Android-App mit Schritten herunterladen</a>
       </WellnessCard>
       <WellnessCard>
         <h2>Blutzucker</h2>
@@ -848,6 +856,7 @@ export function HealthDetails() {
         </p>
         <p>Ohne Verbindung: keine Messwerte vorhanden.</p>
       </WellnessCard>
+      <WellnessCard><h2>Blutdruck</h2><p>Die Android-App kann vorhandene Blutdruckmessungen nach separater Freigabe aus Health Connect lesen – mit Quelle und Messzeitpunkt. Zuerst misst den Blutdruck nicht selbst.</p><p>Im Browser sind keine Messwerte verbunden.</p></WellnessCard>
     </div>
   );
 }

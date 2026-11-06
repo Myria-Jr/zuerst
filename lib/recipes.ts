@@ -1,4 +1,8 @@
+import extraIngredients from '../shared/extra-ingredients.json' with { type: 'json' };
+import library from '../shared/recipe-library.json' with { type: 'json' };
+
 export const ingredients = {
+  ...extraIngredients,
   paprika: ['Paprika', 'Peperoni', 'Gemüsepaprika'],
   eggs: ['Eier', 'Ei'],
   tomatoes: ['Tomaten', 'Tomate', 'Cherrytomaten', 'Cocktailtomaten'],
@@ -48,9 +52,11 @@ export type Recipe = {
   note: string;
   items: readonly (readonly [Ingredient, string])[];
   steps: readonly string[];
+  category?: string;
+  mode?: 'balanced' | 'comfort';
 };
 
-export const recipes: readonly Recipe[] = [
+export const originalRecipes: readonly Recipe[] = [
   {
     id: 'paprika-eier', name: 'Paprika-Rührei', minutes: 10,
     note: 'Saftige Paprikawürfel und cremiges Rührei aus einer Pfanne.',
@@ -196,3 +202,5 @@ export const recipes: readonly Recipe[] = [
     steps: ['Apfel entkernen und grob raspeln.', 'Milch, Haferflocken und Salz unter Rühren aufkochen.', 'Apfel dazugeben und etwa 5 Minuten sanft köcheln lassen. Zwischendurch umrühren.'],
   },
 ];
+
+export const recipes: readonly Recipe[] = [...originalRecipes, ...library as unknown as Recipe[]];

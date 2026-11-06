@@ -52,6 +52,8 @@ import {useWellness,WellnessSummary,FoodJournal,Insights,HealthDetails,Privacy} 
 import {SocialRecipes,AutoPlanner} from "./recipe-import";
 import {PlusPage,useEntitlement} from "./plus";
 import {AppearancePicker} from "./appearance";
+import {useTaste,TastePicker} from "./taste";
+import {rankForTaste,vegetarian} from "../lib/taste";
 
 type Tab = "today" | "food" | "recipes" | "stock" | "more" | "plan" | "history" | "profile" | "health" | "privacy" | "social" | "plus" | "insights" | "autoplan";
 const hiddenTitles:Partial<Record<Tab,string>>={plan:"Plan & Einkauf",history:"Kochverlauf",profile:"Dein Zuerst",health:"Gesundheitsdetails",privacy:"Darstellung & Datenschutz",social:"Rezeptimport",plus:"Zuerst Plus",insights:"Auswertungen",autoplan:"Automatische Planung"};
@@ -97,6 +99,9 @@ export default function JournalApp() {
   const [notice, setNotice] = useState("");
   const [account, setAccount] = useState<Account | null>(null);
   const wellness=useWellness();
+  const tastes=useTaste();
+  const [recipeLimit,setRecipeLimit]=useState(30);
+  useEffect(()=>setRecipeLimit(30),[query,filter,tastes.taste]);
   const entitlement=useEntitlement(account);
   const hasPlus=!!entitlement.value?.plus;
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
@@ -105,7 +110,7 @@ export default function JournalApp() {
   const [cloudDate, setCloudDate] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
   const modal = useRef<HTMLDialogElement>(null);
-  const ready = readyRecipes(state);
+  const ready = rankForTaste(readyRecipes(state),tastes.taste,state.stock);
   const counts = weekCounts(state);
   const count = counts.reduce((sum, d) => sum + d.count, 0);
   const todayPlan = recipes.find((r) =>
@@ -260,7 +265,7 @@ export default function JournalApp() {
       );
     }
   }
-  const searchResults = recipes.filter(
+  const searchResults = rankForTaste(recipes,tastes.taste,state.stock).filter(
     (r) =>
       (!query ||
         r.name
@@ -273,7 +278,7 @@ export default function JournalApp() {
         )) &&
       (filter !== "favorites" || state.favorites.includes(r.id)) &&
       (filter !== "ready" || missing(r, state).length === 0) &&
-      (filter !== "veggie" || !r.items.some(([id]) => id === "tuna")) &&
+      (filter !== "veggie" || vegetarian(r)) &&
       (filter !== "fast" || r.minutes <= 10),
   );
 
@@ -388,7 +393,7 @@ export default function JournalApp() {
             ] as const).map(([id,title,tone,Icon])=><button className={"w-tone-"+tone} key={id} onClick={()=>navigate(id)}><Icon size={26}/><span>{title}</span></button>)}</div>}
             {tab === "today" && (
               <div className="j-dashboard">
-                <WellnessSummary state={wellness.state} open={()=>navigate("food")}/>
+                <WellnessSummary state={wellness.state} open={()=>navigate("food")} health={()=>navigate("health")} setState={wellness.setState}/>
                 <Panel className="j-feature">
                   <div className="j-feature-heading">
                     <span className="j-orb">
@@ -519,13 +524,14 @@ export default function JournalApp() {
                 )}
               </div>
             )}
-            {tab === "recipes" && <button className="j-secondary" onClick={()=>navigate("social")}>Instagram- oder TikTok-Rezept importieren</button>}
+            {tab === "recipes" && <button className="j-secondary" onClick={()=>navigate("social")}>Instagram-Rezepte entdecken & importieren</button>}
             {tab === "plan" && wellness.state.shoppingText.length>0&&<Panel><h2>Eigene Einkaufszutaten</h2>{wellness.state.shoppingText.map(text=><label className="w-list-row" key={text}><input type="checkbox" onChange={()=>wellness.setState(s=>({...s,shoppingText:s.shoppingText.filter(t=>t!==text)}))}/>{text}</label>)}</Panel>}
             {tab === "recipes" && (
               <>
                 <p className="j-lead">
-                  24 Ideen. Zwei Portionen. Höchstens 20 Minuten.
+                  {recipes.length} Ideen. Zwei Portionen. Höchstens 20 Minuten.
                 </p>
+                {tastes.ready&&<TastePicker value={tastes.taste} onChange={tastes.update} error={tastes.error}/>}
                 <label className="j-search">
                   <Search size={21} />
                   <input
@@ -566,7 +572,8 @@ export default function JournalApp() {
                     </h2>
                     <span className="j-count">{searchResults.length}</span>
                   </div>
-                  {searchResults.map(recipeRow)}
+                  {searchResults.slice(0,recipeLimit).map(recipeRow)}
+                  {searchResults.length>recipeLimit&&<button className="j-secondary" onClick={()=>setRecipeLimit(v=>v+30)}>Weitere Rezepte zeigen ({searchResults.length-recipeLimit})</button>}
                   {!searchResults.length && (
                     <p className="j-empty">
                       {filter === "favorites"
@@ -1221,11 +1228,11 @@ export default function JournalApp() {
                   <h2>Über Zuerst</h2>
                   <p>
                     Dein Begleiter für Einkauf, Vorrat und selbst gekochte
-                    Gerichte. 24 vollständige Rezepte, lokale Bonerkennung in
+                    Gerichte. {recipes.length} vollständige Rezepte, lokale Bonerkennung in
                     den nativen Apps und ein ruhiger Blick auf deine Kochwoche.
                   </p>
                   <p className="j-muted">
-                    Von Vora · ein Projekt von Odkaz Labs. Version 1.3.1.
+                    Von Vora · ein Projekt von Odkaz Labs. Version 1.4.0.
                   </p>
                   <a
                     className="j-link"

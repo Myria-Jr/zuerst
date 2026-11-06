@@ -10,6 +10,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BloodGlucoseRecord
+import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateRequest
@@ -21,7 +22,7 @@ import java.time.ZoneId
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun HealthConnectCard() {
+internal fun HealthConnectCard(compact: Boolean = false, details: () -> Unit = {}) {
     val context = LocalContext.current
     val tones = LocalTones.current
     val scope = rememberCoroutineScope()
@@ -35,6 +36,7 @@ internal fun HealthConnectCard() {
     var steps by remember { mutableStateOf<Long?>(null) }
     var floors by remember { mutableStateOf<Double?>(null) }
     var glucose by remember { mutableStateOf<String?>(null) }
+    var pressure by remember { mutableStateOf<String?>(null) }
     var message by remember {
         mutableStateOf("Noch nicht verbunden. Fehlende Werte bleiben unbekannt.")
     }
@@ -46,31 +48,35 @@ internal fun HealthConnectCard() {
         )
     }
     val sugar = remember { setOf(HealthPermission.getReadPermission(BloodGlucoseRecord::class)) }
+    val bloodPressure = remember { setOf(HealthPermission.getReadPermission(BloodPressureRecord::class)) }
     fun read() {
+        if (busy) return
         scope.launch {
             busy = true
             steps = null
             floors = null
             glucose = null
+            pressure = null
             try {
                 val hc = client ?: return@launch
                 val permissions = hc.permissionController.getGrantedPermissions()
                 val end = Instant.now()
                 val start = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
                 val range = TimeRangeFilter.between(start, end)
-                if (movement.all { it in permissions }) {
+                if (movement.any { it in permissions }) {
+                    val metrics = buildSet {
+                        if(HealthPermission.getReadPermission(StepsRecord::class) in permissions) add(StepsRecord.COUNT_TOTAL)
+                        if(HealthPermission.getReadPermission(FloorsClimbedRecord::class) in permissions) add(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL)
+                    }
                     val result =
                         hc.aggregate(
                             AggregateRequest(
-                                setOf(
-                                    StepsRecord.COUNT_TOTAL,
-                                    FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL,
-                                ),
+                                metrics,
                                 range,
                             )
                         )
-                    steps = result[StepsRecord.COUNT_TOTAL]
-                    floors = result[FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL]
+                    if(HealthPermission.getReadPermission(StepsRecord::class) in permissions) steps = result[StepsRecord.COUNT_TOTAL]
+                    if(HealthPermission.getReadPermission(FloorsClimbedRecord::class) in permissions) floors = result[FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL]
                     val origins = result.dataOrigins.joinToString { it.packageName }
                     message =
                         "Heute · abgerufen ${java.time.LocalTime.now().withNano(0)} · Quelle: ${origins.ifBlank{"Health Connect · keine Einträge"}}"
@@ -91,6 +97,10 @@ internal fun HealthConnectCard() {
                             "${it.level.inMillimolesPerLiter} mmol/l · ${it.time.atZone(ZoneId.systemDefault())} · ${it.metadata.dataOrigin.packageName}"
                         }
                 }
+                if(bloodPressure.all { it in permissions }) {
+                    val result=hc.readRecords(ReadRecordsRequest(BloodPressureRecord::class,timeRangeFilter=TimeRangeFilter.between(end.minusSeconds(7*86400),end),ascendingOrder=false,pageSize=1))
+                    pressure=result.records.firstOrNull()?.let { "${it.systolic.inMillimetersOfMercury.toInt()}/${it.diastolic.inMillimetersOfMercury.toInt()} mmHg · ${it.time.atZone(ZoneId.systemDefault())} · ${it.metadata.dataOrigin.packageName}" }
+                }
             } catch (_: SecurityException) {
                 message = "Freigabe verweigert oder widerrufen. Keine Daten gelesen."
             } catch (_: Exception) {
@@ -99,6 +109,12 @@ internal fun HealthConnectCard() {
                 busy = false
             }
         }
+    }
+    val lifecycle=(context as? androidx.activity.ComponentActivity)?.lifecycle
+    DisposableEffect(client,lifecycle) {
+        val observer=androidx.lifecycle.LifecycleEventObserver { _,event -> if(event==androidx.lifecycle.Lifecycle.Event.ON_RESUME) read() }
+        lifecycle?.addObserver(observer)
+        onDispose { lifecycle?.removeObserver(observer) }
     }
     val permissions =
         rememberLauncherForActivityResult(
@@ -118,10 +134,14 @@ internal fun HealthConnectCard() {
                 Text("Health Connect verbinden")
             }
             TextButton({ read() }, enabled = !busy) { Text("Werte aktualisieren") }
+            if(compact) TextButton(details) { Text("Alle Gesundheitsdetails") }
+            if(!compact) {
             TextButton({ permissions.launch(sugar) }, enabled = !busy) {
                 Text("Blutzuckermessungen freiwillig freigeben")
             }
             Text(glucose ?: "Keine Blutzuckermessung verbunden oder vorhanden.")
+            TextButton({permissions.launch(bloodPressure)},enabled=!busy) { Text("Blutdruckmessungen freiwillig freigeben") }
+            Text(pressure ?: "Keine Blutdruckmessung verbunden oder vorhanden.")
             Text(
                 "Nur tatsächliche Messungen mit Zeit und Quelle. Keine Messung durch Zuerst, keine Therapieempfehlung.",
                 style = MaterialTheme.typography.bodySmall,
@@ -133,6 +153,7 @@ internal fun HealthConnectCard() {
                         steps = null
                         floors = null
                         glucose = null
+                        pressure = null
                         message = "Gerätefreigaben widerrufen."
                     } catch (_: Exception) {
                         message = "Bitte Freigaben direkt in Health Connect verwalten."
@@ -140,6 +161,7 @@ internal fun HealthConnectCard() {
                 }
             }) {
                 Text("Gerätefreigaben widerrufen")
+            }
             }
         } else {
             Text(

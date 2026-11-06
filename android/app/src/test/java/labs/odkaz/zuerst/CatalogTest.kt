@@ -25,7 +25,7 @@ class CatalogTest {
         assertTrue(empty.complete.isEmpty())
         assertNull(empty.almost)
         assertEquals("carrots", catalog.search("MOHREN").first())
-        assertEquals(24, catalog.recipes.size)
+        assertTrue(catalog.recipes.size > 200)
         assertTrue(catalog.recipes.all { it.minutes in 1..20 && it.items.isNotEmpty() && it.steps.isNotEmpty() })
     }
 }

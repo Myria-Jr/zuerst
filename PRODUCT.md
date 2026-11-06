@@ -4,7 +4,7 @@ Eigenständige Verbrauchermarke von Odkaz Labs. Hilft beim Einkaufen, Aufbrauche
 
 ## Verbindliche Produktregeln
 
-- 24 vollständige lokale Rezepte, Mengen für zwei Portionen.
+- 216 vollständige lokale Rezepte, Mengen für zwei Portionen.
 - Die erste ausgewählte Zutat muss verwendet werden. Unbestätigte Pflichtzutaten bleiben unbekannt, auch Öl, Salz und Wasser.
 - Das Küchenjournal zeigt ausschließlich selbst eingetragene Gerichte. Keine erfundenen Gesundheits-, Nährwert- oder Sensordaten.
 - Rezeptbibliothek mit Merkliste und Filtern, Wochenplan, Einkauf, optionale Aufbrauchdaten, Bonprüfung und Verlauf bilden einen zusammenhängenden Ablauf.
