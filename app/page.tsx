@@ -48,9 +48,11 @@ import {
 } from "../lib/journal";
 import { authRequest, backupRequest, type Account } from "../lib/cloud";
 import "./journal.css";
-import {useWellness,WellnessSummary,FoodJournal,Insights,HealthDetails,Privacy} from "./wellness";
+import {useWellness,FoodJournal,Insights,HealthDetails,Privacy} from "./wellness";
 import {SocialRecipes,AutoPlanner} from "./recipe-import";
 import {PlusPage,useEntitlement} from "./plus";
+import {Today} from "./today";
+import {recipeLink} from "../lib/today";
 import {AppearancePicker} from "./appearance";
 import {useTaste,TastePicker} from "./taste";
 import {rankForTaste,vegetarian} from "../lib/taste";
@@ -110,17 +112,8 @@ export default function JournalApp() {
   const [cloudDate, setCloudDate] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
   const modal = useRef<HTMLDialogElement>(null);
-  const ready = rankForTaste(readyRecipes(state),tastes.taste,state.stock);
   const counts = weekCounts(state);
   const count = counts.reduce((sum, d) => sum + d.count, 0);
-  const todayPlan = recipes.find((r) =>
-    state.plans.some((p) => p.day === dayKey() && p.recipeId === r.id),
-  );
-  const soon = state.stock
-    .filter(
-      (id) => state.expiry[id] && state.expiry[id]! <= daysFromToday(3)[2],
-    )
-    .sort((a, b) => state.expiry[a]!.localeCompare(state.expiry[b]!));
 
   useEffect(() => {
     try {
@@ -134,7 +127,9 @@ export default function JournalApp() {
     }
     const initialTab = new URLSearchParams(location.search).get("tab");
     if (initialTab && [...tabs.map(t=>t.id),...Object.keys(hiddenTitles)].includes(initialTab)) setTab(initialTab as Tab);
-    const pop=()=>{const id=new URLSearchParams(location.search).get("tab")??"today";setTab(([...tabs.map(t=>t.id),...Object.keys(hiddenTitles)].includes(id)?id:"today") as Tab);};
+    const sharedRecipe=recipes.find(r=>r.id===new URLSearchParams(location.search).get('recipe'));
+    if(sharedRecipe){setTab('recipes');setDetail(sharedRecipe);}
+    const pop=()=>{const params=new URLSearchParams(location.search),id=params.get("tab")??"today",shared=recipes.find(r=>r.id===params.get("recipe"));setTab(shared?"recipes":([...tabs.map(t=>t.id),...Object.keys(hiddenTitles)].includes(id)?id:"today") as Tab);setDetail(shared);};
     window.addEventListener("popstate",pop);
     setLoaded(true);
     authRequest("get-session")
@@ -167,13 +162,14 @@ export default function JournalApp() {
     const update=()=>setTab(next);
     const transition=(document as Document & {startViewTransition?:(update:()=>void)=>unknown}).startViewTransition;
     if(transition&&!matchMedia("(prefers-reduced-motion: reduce)").matches) transition.call(document,update);else update();
-    const url=new URL(location.href);url.searchParams.set("tab",next);history.pushState(null,"",url);
+    const url=new URL(location.href);url.searchParams.set("tab",next);url.searchParams.delete('recipe');history.pushState(null,"",url);
     setQuery("");
     setFilter("all");
     window.scrollTo(0, 0);
     requestAnimationFrame(() => heading.current?.focus());
   }
   function closeModal() {
+    const url=new URL(location.href);if(url.searchParams.has('recipe')){url.searchParams.delete('recipe');history.replaceState(null,'',url);}
     setDetail(undefined);
     setDetailCooking(false);
     setBon(false);
@@ -391,139 +387,7 @@ export default function JournalApp() {
               ["health","Gesundheitsdetails","movement",Heart],["social","Rezept importieren","kitchen",BookOpen],
               ["plus","Zuerst Plus","trend",Plus],["privacy","Darstellung & Datenschutz","water",UserRound]
             ] as const).map(([id,title,tone,Icon])=><button className={"w-tone-"+tone} key={id} onClick={()=>navigate(id)}><Icon size={26}/><span>{title}</span></button>)}</div>}
-            {tab === "today" && (
-              <div className="j-dashboard">
-                <WellnessSummary state={wellness.state} open={()=>navigate("food")} health={()=>navigate("health")} setState={wellness.setState}/>
-                <Panel className="j-feature">
-                  <div className="j-feature-heading">
-                    <span className="j-orb">
-                      <Leaf size={35} strokeWidth={1.6} />
-                    </span>
-                    <span className="j-tag">Deine Küche. Dein Rhythmus.</span>
-                  </div>
-                  <h2>
-                    {state.name
-                      ? `Was kochen wir, ${state.name}?`
-                      : "Etwas Gutes aus dem, was da ist."}
-                  </h2>
-                  <p>
-                    {ready[0]
-                      ? `${ready[0].name} ist in ${ready[0].minutes} Minuten fertig. Du hast alle Zutaten da.`
-                      : "Eine Zutat reicht. Finde in wenigen Schritten dein nächstes Gericht."}
-                  </p>
-                  <a
-                    className="j-secondary"
-                    href={
-                      ready[0] ? `/kochen/?recipe=${ready[0].id}` : "/kochen/"
-                    }
-                  >
-                    Kochen starten <ArrowUpRight size={21} />
-                  </a>
-                </Panel>
-                <div className="j-metrics">
-                  <button
-                    className="j-metric mint"
-                    onClick={() => navigate("stock")}
-                  >
-                    <ShoppingBasket size={22} />
-                    <span>Im Vorrat</span>
-                    <strong>
-                      {state.stock.length}
-                      <small>Zutaten</small>
-                    </strong>
-                    <ChevronRight size={17} />
-                  </button>
-                  <button
-                    className="j-metric lavender"
-                    onClick={() => navigate("history")}
-                  >
-                    <ChartNoAxesColumn size={22} />
-                    <span>Selbst gekocht</span>
-                    <strong>
-                      {count}
-                      <small>letzte 7 Tage</small>
-                    </strong>
-                    <ChevronRight size={17} />
-                  </button>
-                </div>
-                {soon.length > 0 && (
-                  <Panel>
-                    <div className="j-section-title">
-                      <h2>Zuerst aufbrauchen</h2>
-                      <span className="j-count">{soon.length}</span>
-                    </div>
-                    <p className="j-muted">Nach deinen eingetragenen Daten.</p>
-                    <div className="j-chips">
-                      {soon.map((id) => (
-                        <a href={`/kochen/?ingredient=${id}`} key={id}>
-                          {label(id)} · {dateLabel(state.expiry[id]!, true)}
-                        </a>
-                      ))}
-                    </div>
-                    <small>
-                      Das Datum ist ein Hinweis. Prüfe Lebensmittel vor dem
-                      Verwenden.
-                    </small>
-                  </Panel>
-                )}
-                <Panel className="j-today-plan">
-                  <div className="j-section-title">
-                    <h2>Heute auf dem Plan</h2>
-                    <CalendarDays size={22} />
-                  </div>
-                  {todayPlan ? (
-                    <>
-                      {recipeRow(todayPlan)}
-                      <button
-                        className="j-link"
-                        onClick={() => {
-                          navigate("plan");
-                          setShopping(false);
-                        }}
-                      >
-                        Plan ansehen <ChevronRight size={17} />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <p>
-                        Ein kleiner Plan macht den nächsten Einkauf leichter.
-                      </p>
-                      <button
-                        className="j-secondary"
-                        onClick={() => {
-                          navigate("plan");
-                          setShopping(false);
-                        }}
-                      >
-                        Gericht einplanen <Plus size={18} />
-                      </button>
-                    </>
-                  )}
-                </Panel>
-                <Panel className="j-receipt-promo">
-                  <ReceiptText size={28} />
-                  <div>
-                    <h2>Dein Einkauf, schon im Blick.</h2>
-                    <p>
-                      Übernimm Zutaten aus einem Kassenbon in deinen Vorrat.
-                    </p>
-                  </div>
-                  <button className="j-secondary" onClick={() => setBon(true)}>
-                    Bon erfassen <Plus size={18} />
-                  </button>
-                </Panel>
-                {ready.length > 0 && (
-                  <Panel>
-                    <div className="j-section-title">
-                      <h2>Du kannst direkt loslegen</h2>
-                      <span className="j-count">{ready.length}</span>
-                    </div>
-                    {ready.slice(0, 3).map(recipeRow)}
-                  </Panel>
-                )}
-              </div>
-            )}
+            {tab === "today" && <Today journal={state} wellness={wellness.state} setWellness={wellness.setState} taste={tastes.taste} openRecipe={setDetail} food={()=>navigate("food")} health={()=>navigate("health")} stock={()=>navigate("stock")} recipes={()=>navigate("recipes")} receipt={()=>setBon(true)} history={()=>navigate("history")}/>}
             {tab === "recipes" && <button className="j-secondary" onClick={()=>navigate("social")}>Instagram-Rezepte entdecken & importieren</button>}
             {tab === "plan" && wellness.state.shoppingText.length>0&&<Panel><h2>Eigene Einkaufszutaten</h2>{wellness.state.shoppingText.map(text=><label className="w-list-row" key={text}><input type="checkbox" onChange={()=>wellness.setState(s=>({...s,shoppingText:s.shoppingText.filter(t=>t!==text)}))}/>{text}</label>)}</Panel>}
             {tab === "recipes" && (
@@ -1232,7 +1096,7 @@ export default function JournalApp() {
                     den nativen Apps und ein ruhiger Blick auf deine Kochwoche.
                   </p>
                   <p className="j-muted">
-                    Von Vora · ein Projekt von Odkaz Labs. Version 1.4.0.
+                    Von Vora · ein Projekt von Odkaz Labs. Version 1.5.0.
                   </p>
                   <a
                     className="j-link"
@@ -1287,6 +1151,7 @@ export default function JournalApp() {
                 {detail.minutes} Min. · 2 Portionen
               </div>
               <p>{detail.note}</p>
+              <button className="j-text-button" onClick={async()=>{const url=recipeLink(detail.id);try{if(navigator.share)await navigator.share({title:detail.name,text:'Ein Gericht für zwei aus Zuerst.',url});else{await navigator.clipboard.writeText(url);setNotice('Rezeptlink kopiert.');}}catch(error){if(!(error instanceof DOMException&&error.name==='AbortError'))setNotice('Teilen ist hier nicht verfügbar. Der Rezeptlink lautet: '+url);}}}>Rezept teilen</button>
               <h3>Das brauchst du</h3>
               <dl className="j-amounts">
                 {detail.items.map(([id, amount]) => (

@@ -74,6 +74,7 @@
 .w-note {font-size:.875rem;color:var(--subtext);max-width:65ch;}
 .w-feedback {display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--movement);color:var(--on-movement);border-radius:20px;}
 .w-feedback svg {animation:w-confirm 260ms cubic-bezier(.16,1,.3,1);}
+.update-notice{display:flex;align-items:center;gap:12px;margin:12px auto;padding:16px 20px;max-width:920px;flex-wrap:wrap;background:var(--water);color:var(--on-water);border-radius:22px;position:relative;z-index:2}.update-notice span{flex:1;min-width:180px}.update-notice button{min-height:48px;padding:8px 12px;border-radius:18px;background:var(--card);color:var(--text);font:inherit;border:0;cursor:pointer}
 .w-check {display:flex;gap:12px;align-items:flex-start;min-height:48px;cursor:pointer;}
 .w-check input {width:22px;height:22px;flex:none;margin-top:2px;accent-color:var(--action);}
 .w-menu {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}

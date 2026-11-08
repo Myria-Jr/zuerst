@@ -11,3 +11,4 @@ Modus: Operate. Verbindlicher Hybrid: Google Pixel / Material You / Google Healt
 - Auswahlpillen: mindestens 48 dp, 8 dp horizontaler und 10 dp vertikaler Abstand; keine Größenänderung im Auswahlzustand.
 - Navigation 200 ms, Zahlen 320 ms. Keine Dauerdekoration. Reduzierte Bewegung deaktiviert räumliche Animationen; reduzierte Transparenz beziehungsweise Android-Schalter liefert deckende Navigation.
 - Gesundheitswerte ohne Quelle oder Messung bleiben unbekannt. Lokale Zählwerte zeigen ausdrücklich nur protokollierte Einträge.
+- Version 1.5: Heute beginnt mit einem konkreten nächsten Kochschritt, gefolgt von kurzen Eintragswegen und kompakten, optional ausgeblendeten Kennzahlen. Journal-Aktivierung ist freiwillig und klar erreichbar. Keine doppelt gestapelten Werbekarten. Rezeptlinks sind ohne Konto nutzbar, Wiederholportionen verlangen eine erneute Bestätigung.

@@ -13,7 +13,13 @@ npm run dev
 
 Öffne [localhost:3000](http://localhost:3000). `npm test` prüft Rezeptkatalog, Suche und Matching. `npm run build` erstellt den statischen Export; `npm start` zeigt diesen Export lokal an.
 
-## Zuerst 1.4
+## Zuerst 1.5
+
+- Neue Tagesführung: ein passendes Gericht oder die Zutatenauswahl als Hauptaktion; bestätigter Vorrat und fehlende Zutaten werden klar getrennt. Persönliche Pläne haben Vorrang.
+- Kompakter Überblick mit optional ausgeblendeten Bereichen Wasser/Ernährung/Bewegung. Einstellungen bleiben lokal, Gesundheitsdaten bleiben vom Küchenbackup getrennt.
+- Wiederkehrende Lebensmittel mit letzter bestätigter Grammmenge vorbereiten und erneut bestätigen. Geteilte Rezeptlinks öffnen das konkrete Gericht ohne Konto.
+- Die Web-App weist nach einem weiteren Release auf verfügbare Updates hin; kein automatisches Neuladen offener Formulare. Bereits vor 1.5 geöffnete alte Tabs müssen einmal manuell neu geladen werden.
+- Recherche, Positionierung und überprüfbare Wachstumshypothesen: [Produktstrategie](docs/PRODUCT-STRATEGY.md). Kein neues Werbe- oder Analytics-Tracking.
 
 - 216 vollständige lokale Gerichte, zwei Portionen, bis 20 Minuten. 192 neue Originalrezepte mit unterschiedlichen Zubereitungen; Mengen für Dosen sind Abtropfgewichte. Gekochter Reis und Kartoffeln sind ausdrücklich vorgegart.
 - „Dein Geschmack“ unter Rezepte: Lieblingszutaten, Ausschlüsse, vegetarisch sowie Alltag/Comfort Food. Lokal gespeichert; kein Konto nötig. Die automatische Planung berücksichtigt Ausschlüsse und Ausrichtung.

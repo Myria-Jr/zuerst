@@ -139,21 +139,52 @@ internal fun JSONObject.adult() = journalEnabled() && getJSONObject("profile").o
 private fun decimals(value: Double) = String.format(java.util.Locale.GERMAN, "%.1f", value)
 
 @Composable
-internal fun WellnessToday(store:WellnessStore,data:JSONObject,update:(JSONObject)->Unit,open:()->Unit) {
+internal fun WellnessToday(store:WellnessStore,data:JSONObject,update:(JSONObject)->Unit,showWater:Boolean=true,showNutrition:Boolean=true,open:()->Unit) {
     val day=LocalDate.now().toString()
     val drinks=data.optJSONArray("drinks")?.objects()?.filter { it.optString("day")==day && it.optString("kind")=="water" } ?: emptyList()
     val entries=data.optJSONArray("food")?.objects()?.filter { it.optString("day")==day } ?: emptyList()
-    JournalCard(LocalTones.current.water,LocalTones.current.onWater) {
-        Text("Wasser heute",style=MaterialTheme.typography.titleLarge)
+    val compact=androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp>=360 && androidx.compose.ui.platform.LocalDensity.current.fontScale<1.3f
+    val waterTile: @Composable (Modifier)->Unit = {modifier ->
+    if(showWater) JournalCard(LocalTones.current.water,LocalTones.current.onWater,modifier) {
+        Text("Wasser",style=MaterialTheme.typography.titleMedium)
         Text("${drinks.sumOf { it.optInt("ml") }} ml",style=MaterialTheme.typography.headlineMedium)
-        Button({val next=JSONObject(data.toString());next.getJSONArray("drinks").put(JSONObject().put("id",UUID.randomUUID().toString()).put("kind","water").put("ml",250).put("caffeineMg",0).put("day",day).put("at",Instant.now().toString()).put("name","Wasser"));update(next)}) { Text("+ 250 ml") }
-        TextButton(open) { Text("Getränke ansehen & bearbeiten") }
+        Text("Heute protokolliert",style=MaterialTheme.typography.bodySmall)
+        TextButton({val next=JSONObject(data.toString());next.getJSONArray("drinks").put(JSONObject().put("id",UUID.randomUUID().toString()).put("kind","water").put("ml",250).put("caffeineMg",0).put("day",day).put("at",Instant.now().toString()).put("name","Wasser"));update(next)}) { Text("+ 250 ml") }
     }
-    JournalCard(LocalTones.current.nutrition,LocalTones.current.onNutrition) {
-        Text("Ernährung heute",style=MaterialTheme.typography.titleLarge)
+    }
+    val foodTile: @Composable (Modifier)->Unit = {modifier ->
+    if(showNutrition) JournalCard(LocalTones.current.nutrition,LocalTones.current.onNutrition,modifier) {
+        Text("Ernährung",style=MaterialTheme.typography.titleMedium)
         if(data.adult() && entries.isNotEmpty()) Text("${decimals(entries.sumOf { entry -> (store.foods.firstOrNull { it.id==entry.optString("foodId") }?.kcal ?: 0.0)*entry.optDouble("grams")/100 })} kcal",style=MaterialTheme.typography.headlineMedium)
-        Text("${entries.size} bestätigte Essenseinträge. Kein geschätzter Tagesbedarf.")
+        Text("${entries.size} bestätigte Einträge",style=MaterialTheme.typography.bodySmall)
         TextButton(open) { Text("Essen eintragen") }
+    }
+    }
+    if(compact&&showWater&&showNutrition) Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){waterTile(Modifier.weight(1f));foodTile(Modifier.weight(1f))}else{waterTile(Modifier);foodTile(Modifier)}
+}
+
+@Composable
+internal fun TodayHealth(store:WellnessStore,data:JSONObject,update:(JSONObject)->Unit,open:()->Unit,details:()->Unit){
+    val context=LocalContext.current
+    val prefs=remember {context.getSharedPreferences("zuerst-dashboard",Context.MODE_PRIVATE)}
+    var editing by remember {mutableStateOf(false)}
+    var water by remember {mutableStateOf(prefs.getBoolean("water",true))}
+    var nutrition by remember {mutableStateOf(prefs.getBoolean("nutrition",true))}
+    var movement by remember {mutableStateOf(prefs.getBoolean("movement",true))}
+    TextButton({editing=!editing}){Text(if(editing)"Überblick fertig" else "Überblick anpassen")}
+    if(editing) {
+        listOf("Wasser" to water,"Ernährung" to nutrition,"Bewegung" to movement).forEach { (name,value) -> Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+            Checkbox(value,{checked->when(name){"Wasser"->{water=checked;prefs.edit().putBoolean("water",checked).apply()};"Ernährung"->{nutrition=checked;prefs.edit().putBoolean("nutrition",checked).apply()};else->{movement=checked;prefs.edit().putBoolean("movement",checked).apply()}}});Text(name)
+        } }
+        Text("Ändert nur die Übersicht. Gespeicherte Daten bleiben erhalten.",style=MaterialTheme.typography.bodySmall)
+    }
+    if(data.journalEnabled()) {
+        WellnessToday(store,data,update,water,nutrition,open)
+        if(movement) HealthConnectCard(compact=true,details=details)
+    } else JournalCard(LocalTones.current.nutrition,LocalTones.current.onNutrition) {
+        Text("Essen, Wasser & Bewegung",style=MaterialTheme.typography.titleMedium)
+        Text("Dein freiwilliges Journal bleibt auf dem Gerät. Kochen funktioniert sofort.",style=MaterialTheme.typography.bodyMedium)
+        TextButton(open){Text("Journal entdecken")}
     }
 }
 
@@ -282,6 +313,14 @@ internal fun WellnessScreen(store: WellnessStore, data: JSONObject, update: (JSO
             fontWeight = FontWeight.Bold,
         )
         Text("Roh und gekocht sind getrennte Lebensmittel.")
+        if(enabled && chosen==null && query.isBlank()) {
+            val recent=data.getJSONArray("food").objects().sortedByDescending {it.optString("at")}.distinctBy {it.optString("foodId")}.take(5)
+            if(recent.isNotEmpty())Text("Nochmal das Gleiche?",style=MaterialTheme.typography.titleMedium)
+            recent.forEach { entry -> store.foods.firstOrNull {it.id==entry.optString("foodId")}?.let { food ->
+                TextButton({chosen=food;grams=entry.optDouble("grams").toString();fromPhoto=false}){Text("${food.name} · ${decimals(entry.optDouble("grams"))} g")}
+            } }
+            if(recent.isNotEmpty())Text("Menge prüfen und anschließend bestätigen.",style=MaterialTheme.typography.bodySmall)
+        }
         FilledTonalButton(
             { picker.launch("image/*") },
             enabled = !scanning,

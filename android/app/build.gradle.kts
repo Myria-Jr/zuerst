@@ -12,8 +12,8 @@ android {
         applicationId = "labs.odkaz.zuerst"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.4.0"
+        versionCode = 9
+        versionName = "1.5.0"
         if (!providers.gradleProperty("zuerstAllAbis").isPresent) {
             ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         }
