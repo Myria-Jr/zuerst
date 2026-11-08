@@ -137,6 +137,17 @@ struct WellnessView: View {
     private var foodSearch: some View {
         JournalPanel(tint: Palette.nutrition) {
             Text("Was hast du gegessen?").font(.title2.bold())
+            if store.enabled && selected == nil && query.isEmpty {
+                let ordered=store.data.food.sorted {$0.at>$1.at}
+                let recent=ordered.enumerated().filter {index,entry in !ordered.prefix(index).contains {$0.foodId==entry.foodId}}.map { $0.element }
+                if !recent.isEmpty {
+                    Text("Nochmal das Gleiche?").font(.headline)
+                    Text("Letzte bestätigte Portion wählen und die Menge prüfen.").font(.footnote)
+                    ForEach(Array(recent.prefix(5))) { entry in
+                        if let food=store.foods.first(where:{$0.id==entry.foodId}) { Button("\(food.name) · \(entry.grams,specifier:"%.1f") g") {selected=food;grams=String(entry.grams);photoSource=false}.frame(minHeight:48) }
+                    }
+                }
+            }
             Text("Roh und gekocht bleiben getrennte Einträge.")
             PhotosPicker(selection: $image, matching: .images) { Label(scanning ? "Foto wird lokal geprüft …" : "Foto als Suchhilfe", systemImage: "camera").frame(minHeight: 48) }.disabled(scanning)
             Text("Fotos bleiben auf dem Gerät. Öl, Sauce und gewogene Gramm selbst ergänzen.").font(.footnote)

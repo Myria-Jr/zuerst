@@ -4,6 +4,7 @@ import "./style.css";
 import "./expressive.css";
 import { themeBootstrap } from '../lib/appearance';
 import { ThemeObserver } from './appearance';
+import {UpdateNotice} from './update-notice';
 
 export const metadata: Metadata = {
   title: "Zuerst – Deine Küche. Dein Rhythmus.",
@@ -23,7 +24,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="de" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{__html:themeBootstrap}} /></head>
-      <body><ThemeObserver />{children}</body>
+      <body><ThemeObserver /><UpdateNotice />{children}</body>
     </html>
   );
 }

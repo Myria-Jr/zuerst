@@ -104,6 +104,11 @@ struct JournalHome: View {
     @AppStorage("kitchen_journal_v1") private var saved = Data()
     @StateObject private var wellness = WellnessStore()
     @StateObject private var todayMotion = MotionJournal()
+    @AppStorage("dashboard_water") private var showWater=true
+    @AppStorage("dashboard_nutrition") private var showNutrition=true
+    @AppStorage("dashboard_movement") private var showMovement=true
+    @AppStorage("zuerst-taste") private var tasteJSON="{}"
+    @State private var editDashboard=false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var more = "menu"
     @State private var tab = Tab.today
@@ -183,69 +188,68 @@ struct JournalHome: View {
         }
     }
 
+    private var focusRecipe: Recipe? {
+        if let plan=journal.plans.first(where:{$0.day==JournalDates.key(.now)}),let r=catalog.recipes.first(where:{$0.id==plan.recipeId}) {return r}
+        let taste=(tasteJSON.data(using:.utf8).flatMap {try? JSONSerialization.jsonObject(with:$0)} as? [String:Any]) ?? [:]
+        let avoids=taste["avoids"] as? [String] ?? []
+        return catalog.recipes.filter { r in
+            r.items.contains {stock.contains($0.id) && !catalog.pantry.contains($0.id)} && !r.items.contains {avoids.contains($0.id)} &&
+            ((taste["diet"] as? String) != "vegetarian" || !r.items.contains {$0.id=="tuna"}) && ((taste["mode"] as? String ?? "all")=="all" || (r.mode ?? "balanced")==((taste["mode"] as? String) ?? "all"))
+        }.sorted {a,b in journal.missing(a).count != journal.missing(b).count ? journal.missing(a).count<journal.missing(b).count : a.minutes<b.minutes}.first
+    }
     private var today: some View {
-        let ready = catalog.ready(stock: stock)
-        return VStack(alignment: .leading, spacing: 13) {
-            Text(Date.now.formatted(.dateTime.locale(Locale(identifier: "de_DE")).weekday(.wide).day().month(.wide)))
-                .font(.subheadline.weight(.medium)).foregroundStyle(Color.primary.opacity(0.7))
-            if wellness.enabled {
-                JournalPanel(tint: Palette.water) {
-                    Text("Wasser heute").font(.title2.bold())
-                    Text("\(wellness.data.drinks.filter { $0.day == JournalDates.key(.now) && $0.kind == "water" }.reduce(0) { $0 + $1.ml }) ml").font(.largeTitle.bold()).contentTransition(.numericText())
-                    Button("+ 250 ml") { wellness.update { $0.drinks.append(WaterEntry(id: UUID().uuidString, kind:"water",ml:250,caffeineMg:0,day:JournalDates.key(.now),at:ISO8601DateFormatter().string(from:.now),name:"Wasser")) } }.buttonStyle(.bordered).frame(minHeight:48)
-                    Button("Getränke ansehen & bearbeiten") {tab = .food}.frame(minHeight:48)
+        VStack(alignment:.leading,spacing:16) {
+            Text(Date.now.formatted(.dateTime.locale(Locale(identifier:"de_DE")).weekday(.wide).day().month(.wide))).font(.subheadline).foregroundStyle(.secondary)
+            JournalPanel(tint:Palette.kitchen) {
+                Text(focusRecipe?.name ?? "Was kochen wir heute?").font(.title2.bold())
+                if let recipe=focusRecipe {
+                    Text("\(recipe.minutes) Minuten · 2 Portionen")
+                    let missing=journal.missing(recipe)
+                    Text(missing.isEmpty ? "Alle Zutaten im Vorrat erfasst. Mengen und Zustand prüfen." : "Noch nicht erfasst: " + missing.prefix(3).map {catalog.name($0)}.joined(separator:", ") + (missing.count>3 ? " und \(missing.count-3) weitere." : ".")).font(.footnote)
+                    Button("Rezept ansehen") {detail=recipe}.buttonStyle(.borderedProminent).frame(minHeight:48)
+                } else {
+                    Text("Eine Zutat reicht. Finde ein Gericht in höchstens 20 Minuten.")
+                    Button("Zutat auswählen") {cooking=CookingSession(preset:[],stock:stock)}.buttonStyle(.borderedProminent).frame(minHeight:48)
                 }
-                JournalPanel(tint: Palette.movement) {
-                    Text("Bewegung heute").font(.title2.bold())
+            }
+            PillLayout {
+                Button("Essen eintragen") {tab = .food}.buttonStyle(.bordered).frame(minHeight:48)
+                Button("Bon erfassen") {receipt=true}.buttonStyle(.bordered).frame(minHeight:48)
+                Button("Rezepte finden") {tab = .recipes}.buttonStyle(.bordered).frame(minHeight:48)
+            }
+            HStack {Text("Dein Überblick").font(.title2.bold());Spacer();Button(editDashboard ? "Fertig" : "Anpassen") {editDashboard.toggle()}.frame(minHeight:48)}
+            if editDashboard { JournalPanel {Toggle("Wasser",isOn:$showWater);Toggle("Ernährung",isOn:$showNutrition);Toggle("Bewegung",isOn:$showMovement);Text("Ändert nur deine Übersicht. Gespeicherte Daten bleiben erhalten.").font(.footnote)} }
+            if wellness.enabled {
+                LazyVGrid(columns:[GridItem(.adaptive(minimum:140),spacing:12)],alignment:.leading,spacing:12) {
+                    if showWater { waterTile }
+                    if showNutrition { nutritionTile }
+                }
+                if showMovement { JournalPanel(tint:Palette.movement) {
+                    Text("Bewegung").font(.headline)
                     Text("\(todayMotion.steps.map(String.init) ?? "–") Schritte · \(todayMotion.floors.map(String.init) ?? "–") Etagen").font(.title2.bold()).contentTransition(.numericText())
                     Text(todayMotion.message).font(.footnote)
-                    Button("CoreMotion verbinden / aktualisieren") { todayMotion.read() }.buttonStyle(.bordered).frame(minHeight:48)
-                }
-                JournalPanel(tint: Palette.nutrition) {
-                    let entries=wellness.data.food.filter { $0.day==JournalDates.key(.now) }
-                    Text("Ernährung heute").font(.title2.bold())
-                    if wellness.adult && !entries.isEmpty { Text("\(entries.reduce(0.0) { sum,e in sum + (wellness.foods.first { $0.id==e.foodId }?.per100g.energyKcal ?? 0)*e.grams/100 },specifier:"%.0f") kcal").font(.largeTitle.bold()) }
-                    Text("\(entries.count) bestätigte Essenseinträge. Kein geschätzter Tagesbedarf.")
-                    Button("Essen eintragen") {tab = .food}.frame(minHeight:48)
-                }
-            }
-            JournalPanel(tint: Palette.nutrition) { Text("Gut essen. Gut für dich.").font(.title2.bold()); Text("Essen und Wasser freiwillig lokal festhalten. Ohne Zielvorgaben."); Button("Essen eintragen") { tab = .food }.buttonStyle(.borderedProminent).frame(minHeight: 48) }
-            if !journal.name.isEmpty { Text("Hallo, \(journal.name)").font(.title2.bold()) }
-            JournalPanel(tint: Palette.kitchen) {
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .center, spacing: 18) { suggestion(ready.first); readyCount(ready.count) }
-                    VStack(alignment: .leading, spacing: 10) { suggestion(ready.first); readyCount(ready.count) }
-                }
-                Button {
-                    let preset = ready.first?.items.map(\.id).filter { !catalog.pantry.contains($0) } ?? []
-                    cooking = CookingSession(preset: Array(preset.prefix(3)), stock: stock)
-                } label: {
-                    Label("Kochen starten", systemImage: "fork.knife").frame(maxWidth: .infinity, minHeight: 44)
-                }.buttonStyle(.borderedProminent).buttonBorderShape(.capsule)
-            }
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 9) { stockMetric; historyMetric }
-                VStack(spacing: 9) { stockMetric; historyMetric }
-            }
-            let soon = stock.filter { journal.expiry[$0].map { $0 <= JournalDates.key(Calendar.current.date(byAdding: .day, value: 2, to: .now)!) } ?? false }
-            if !soon.isEmpty { JournalPanel(tint: Palette.nutrition) {
-                Text("Zuerst aufbrauchen").font(.headline)
-                ForEach(soon, id: \.self) { id in Text("\(catalog.name(id)) · \(journal.expiry[id] ?? "")") }
-                Text("Nach deinen eingetragenen Daten. Prüfe Lebensmittel vor dem Verwenden.").font(.footnote).foregroundStyle(Color.primary.opacity(0.7))
-            } }
-            JournalPanel {
-                Label("Heute auf dem Plan", systemImage: "calendar").font(.headline)
-                let planned = catalog.recipes.first { recipe in journal.plans.contains { $0.day == JournalDates.key(.now) && $0.recipeId == recipe.id } }
-                if let planned { Button(planned.name) { detail = planned }.buttonStyle(.plain) }
-                else { Text("Ein kleiner Plan macht den nächsten Einkauf leichter.").foregroundStyle(Color.primary.opacity(0.7)) }
-                Button("Plan ansehen") { more = "plan"; tab = .more }.buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
-            }
-            JournalPanel(tint: Palette.movement) {
-                Label("Vom Einkauf in den Vorrat", systemImage: "receipt").font(.headline)
-                Text("Fotografiere einen Kassenbon und prüfe die erkannten Zutaten.").foregroundStyle(Color.primary.opacity(0.7))
-                Button("Bon erfassen") { receipt = true }
-                    .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
-            }
+                    Button("Verbinden / aktualisieren") {todayMotion.read()}.frame(minHeight:48)
+                } }
+            } else { JournalPanel(tint:Palette.nutrition) {Text("Essen, Wasser & Bewegung").font(.headline);Text("Dein freiwilliges Journal bleibt auf dem Gerät. Kochen funktioniert sofort.");Button("Journal entdecken") {tab = .food}.frame(minHeight:48)} }
+            ViewThatFits(in:.horizontal) {HStack(spacing:12){stockMetric;historyMetric};VStack(spacing:12){stockMetric;historyMetric}}
+            JournalPanel {Button("Plan & Einkauf öffnen") {more="plan";tab = .more}.frame(minHeight:48);Text("Dein Überblick zeigt Einträge und verbundene Daten, keine Bewertung deines Körpers oder Tagesbedarfs.").font(.footnote)}
+        }
+    }
+    private var waterTile: some View {
+        JournalPanel(tint:Palette.water) {
+            Text("Wasser").font(.headline)
+            Text("\(wellness.data.drinks.filter {$0.day==JournalDates.key(.now) && $0.kind=="water"}.reduce(0) {$0+$1.ml}) ml").font(.title.bold()).contentTransition(.numericText())
+            Text("Heute protokolliert").font(.footnote)
+            Button("+ 250 ml") {wellness.update {$0.drinks.append(WaterEntry(id:UUID().uuidString,kind:"water",ml:250,caffeineMg:0,day:JournalDates.key(.now),at:ISO8601DateFormatter().string(from:.now),name:"Wasser"))}}.frame(minHeight:48)
+        }
+    }
+    private var nutritionTile: some View {
+        let entries=wellness.data.food.filter {$0.day==JournalDates.key(.now)}
+        return JournalPanel(tint:Palette.nutrition) {
+            Text("Ernährung").font(.headline)
+            if wellness.adult && !entries.isEmpty {Text("\(entries.reduce(0.0) {sum,e in sum+(wellness.foods.first {$0.id==e.foodId}?.per100g.energyKcal ?? 0)*e.grams/100},specifier:"%.0f") kcal").font(.title.bold())}
+            Text("\(entries.count) bestätigte Einträge").font(.footnote)
+            Button("Essen eintragen") {tab = .food}.frame(minHeight:48)
         }
     }
 

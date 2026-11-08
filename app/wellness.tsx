@@ -37,6 +37,7 @@ import {
 } from "../lib/wellness";
 import { dayKey } from "../lib/journal";
 import { AnimatedNumber, AppearancePicker } from "./appearance";
+import {recentPortions} from '../lib/today';
 import "./wellness.css";
 export type Setter = Dispatch<SetStateAction<Wellness>>;
 export type WellnessProps = { state: Wellness; setState: Setter };
@@ -115,69 +116,6 @@ export function useWellness() {
       }
     },
   };
-}
-export function WellnessSummary({
-  state,
-  open,
-  health,
-  setState,
-}: {
-  state: Wellness;
-  open: () => void;
-  health: () => void;
-  setState: Setter;
-}) {
-  const enabled = canJournal(state),
-    water = state.drinks
-      .filter((d) => d.day === dayKey() && d.kind === "water")
-      .reduce((s, d) => s + d.ml, 0);
-  return (
-    <div className="w-stack">
-      <WellnessCard tone="nutrition">
-        <h2>Gut essen. Gut für dich.</h2>
-        <p>
-          {enabled
-            ? "Halte fest, was dir heute guttut. Ohne Zielvorgaben."
-            : "Dein Essen und deine Küche, an einem Ort. Das Journal bleibt freiwillig."}
-        </p>
-        <button className="j-primary" onClick={open}>
-          <Plus size={20} />
-          {enabled ? "Essen eintragen" : "Essen entdecken"}
-        </button>
-      </WellnessCard>
-      <div className="w-grid">
-        <div className="w-metric w-tone-water">
-          <span className="w-label">
-            <Droplets size={20} />
-            Wasser
-          </span>
-          <strong>
-            {enabled ? (
-              <>
-                <AnimatedNumber value={water} /> <small>ml</small>
-              </>
-            ) : (
-              "–"
-            )}
-          </strong>
-          <small>
-            {enabled ? "Heute eingetragen" : "Journal noch nicht aktiviert"}
-          </small>
-          <button className="j-text-button" onClick={()=>enabled?setState(s=>({...s,drinks:[...s.drinks,{id:crypto.randomUUID(),kind:'water',ml:250,caffeineMg:0,day:dayKey(),at:new Date().toISOString(),name:'Wasser'}]})):open()}>{enabled?'+ 250 ml':'Journal aktivieren'}</button>
-        </div>
-        <div className="w-metric w-tone-movement">
-          <span className="w-label">
-            <Footprints size={20} />
-            Bewegung
-          </span>
-          <strong>–</strong>
-          <small>Gerätedaten in der nativen App verbinden</small>
-          <button className="j-text-button" onClick={health}>Schritte & Etagen</button>
-        </div>
-      </div>
-      {enabled&&<WellnessCard tone="nutrition"><h2>Ernährung heute</h2>{isAdult(state)&&state.food.some(e=>e.day===dayKey())?<strong className="w-number">{num(totals(state,dayKey()).energyKcal)} kcal</strong>:<p>{state.food.filter(e=>e.day===dayKey()).length} bestätigte Essenseinträge</p>}<p>Nur protokollierte Mengen. Keine Schätzung deines Tagesbedarfs.</p><button className="j-text-button" onClick={open}>Essen & Getränke öffnen</button></WellnessCard>}
-    </div>
-  );
 }
 export function JournalConsent({ state, setState }: WellnessProps) {
   const [age, setAge] = useState(""),
@@ -343,6 +281,7 @@ export function FoodJournal({ state, setState }: WellnessProps) {
       <JournalConsent state={state} setState={setState} />
       <WellnessCard tone="nutrition">
         <h2>Was hast du gegessen?</h2>
+        {enabled&&!selected&&!query&&recentPortions(state).length>0&&<div className="w-repeat"><h3>Nochmal das Gleiche?</h3><p className="w-note">Letzte bestätigte Portion wählen, Menge prüfen und neu eintragen.</p>{recentPortions(state).map(entry=>{const food=foods.find(f=>f.id===entry.foodId);return food?<button className="w-search-result" key={entry.foodId} onClick={()=>{setSelected(food);setGrams(String(entry.grams));setSource('manual');setDay(dayKey());}}><span>{food.name}</span><span>{num(entry.grams,1)} g</span></button>:null;})}</div>}
         <p>
           Suche ein Lebensmittel. Rohes und gekochtes Gewicht sind getrennte
           Einträge.

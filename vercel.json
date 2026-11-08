@@ -9,6 +9,7 @@
     }
   ],
   "headers": [
+    {"source":"/version.json","headers":[{"key":"Cache-Control","value":"no-store"}]},
     {
       "source": "/downloads/zuerst-android.apk",
       "headers": [

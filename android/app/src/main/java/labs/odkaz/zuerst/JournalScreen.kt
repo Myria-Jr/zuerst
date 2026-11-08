@@ -310,11 +310,9 @@ internal fun JournalScreen(catalog: Catalog) {
                                         { openKitchen(it) },
                                         { page = JournalPage.Receipt },
                                         { tab = it },
+                                        { recipeId=it.id;page=JournalPage.Recipe },
                                     ) {
-                                        if(wellness.journalEnabled()) {
-                                            WellnessToday(wellnessStore,wellness,::updateWellness) { tab=JournalTab.Food }
-                                            HealthConnectCard(compact=true) { page=JournalPage.Health }
-                                        }
+                                        TodayHealth(wellnessStore,wellness,::updateWellness,{tab=JournalTab.Food},{page=JournalPage.Health})
                                     }
                                 }
                                 JournalTab.Food ->
@@ -453,6 +451,7 @@ internal fun JournalScreen(catalog: Catalog) {
         )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Today(
     catalog: Catalog,
@@ -460,6 +459,7 @@ private fun Today(
     cook: (Boolean) -> Unit,
     receipt: () -> Unit,
     navigate: (JournalTab) -> Unit,
+    openRecipe: (Recipe) -> Unit,
     health: @Composable () -> Unit = {},
 ) {
     val ready = remember(journal.stock) { catalog.ready(journal.stock) }
@@ -470,59 +470,29 @@ private fun Today(
         style = MaterialTheme.typography.labelLarge,
     )
     JournalTitle(if (journal.name.isBlank()) "Heute" else "Hallo, ${journal.name}")
+    val prefs=androidx.compose.ui.platform.LocalContext.current.getSharedPreferences("zuerst-taste",android.content.Context.MODE_PRIVATE)
+    val taste=runCatching {org.json.JSONObject(prefs.getString("value","{}")?:"{}")}.getOrDefault(org.json.JSONObject())
+    val avoids=taste.optJSONArray("avoids")?.let {a -> (0 until a.length()).map {a.optString(it)}}?:emptyList()
+    val planned=journal.plans.firstOrNull {it.day==LocalDate.now()}?.let {p -> catalog.recipes.firstOrNull {it.id==p.recipeId}}
+    val suggested=planned?:catalog.recipes.filter {r ->
+        r.items.any {it.id in journal.stock && it.id !in catalog.pantry} && r.items.none {it.id in avoids} &&
+        (taste.optString("diet")!="vegetarian" || r.items.none {it.id=="tuna"}) && (taste.optString("mode","all")=="all" || r.mode==taste.optString("mode"))
+    }.sortedWith(compareBy<Recipe> {journal.missing(it).size}.thenBy {it.minutes}).firstOrNull()
+    JournalCard(LocalTones.current.kitchen,LocalTones.current.onKitchen) {
+        Text(suggested?.name?:"Was kochen wir heute?",style=MaterialTheme.typography.headlineSmall,fontWeight=FontWeight.Bold)
+        Text(suggested?.let {"${it.minutes} Minuten · 2 Portionen${if(planned!=null)" · Heute eingeplant" else ""}"}?:"Eine Zutat reicht. Finde ein Gericht in höchstens 20 Minuten.")
+        if(suggested!=null) {
+            val missing=journal.missing(suggested)
+            Text(if(missing.isEmpty())"Alle Zutaten im Vorrat erfasst. Mengen und Zustand prüfen." else "Noch nicht erfasst: "+missing.take(3).joinToString {catalog.name(it)}+if(missing.size>3)" und ${missing.size-3} weitere." else ".",style=MaterialTheme.typography.bodySmall)
+        }
+        Button({if(suggested!=null)openRecipe(suggested)else cook(false)},Modifier.fillMaxWidth().heightIn(min=48.dp)){Text(if(suggested!=null)"Rezept ansehen" else "Zutat auswählen")}
+    }
+    FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+        FilledTonalButton({navigate(JournalTab.Food)}){Text("Essen eintragen")}
+        FilledTonalButton(receipt){Text("Bon erfassen")}
+        FilledTonalButton({navigate(JournalTab.Recipes)}){Text("Rezepte finden")}
+    }
     health()
-    JournalCard(LocalTones.current.nutrition, LocalTones.current.onNutrition) {
-        Text(
-            "Gut essen. Gut für dich.",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-        )
-        Text("Essen und Wasser freiwillig lokal festhalten. Ohne Zielvorgaben.")
-        Button(
-            { navigate(JournalTab.Food) },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        ) {
-            Text("Essen eintragen")
-        }
-    }
-    JournalCard(LocalTones.current.kitchen, LocalTones.current.onKitchen) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                Text(
-                    "Aus Vorrat kochen",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    ready.firstOrNull()?.let { "${it.name} · ${it.minutes} Min." }
-                        ?: "Wähle eine Zutat und finde ein Gericht für heute.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            Box(
-                Modifier.size(80.dp).background(scheme.surface.copy(alpha = .35f), CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "${ready.size}",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text("passend", style = MaterialTheme.typography.labelSmall)
-                }
-            }
-        }
-        FilledTonalButton(
-            onClick = { cook(ready.isNotEmpty()) },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        ) {
-            Text("Kochen starten")
-        }
-    }
     Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
         Metric("Vorrat", journal.stock.size, "Zutaten", Modifier.weight(1f)) {
             navigate(JournalTab.Stock)
@@ -824,13 +794,14 @@ internal fun JournalTitle(title: String) {
 internal fun JournalCard(
     color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surfaceContainerLow,
     foreground: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
         shape = RoundedCornerShape(26.dp),
         color = color,
         contentColor = foreground,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Column(
             Modifier.padding(17.dp),

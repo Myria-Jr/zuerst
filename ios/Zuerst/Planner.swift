@@ -207,6 +207,7 @@ struct RecipePage: View {
                     Text(recipe.name).font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
                     Text("\(recipe.minutes) Min. · 2 Portionen").foregroundStyle(Color.primary.opacity(0.7))
                     Text(recipe.note)
+                    if let link=URL(string:"https://zuerst.vercel.app/?tab=recipes&recipe=\(recipe.id)") { ShareLink(item:link,subject:Text(recipe.name),message:Text("Ein Gericht für zwei aus Zuerst.")).frame(minHeight:48) }
                     JournalPanel {
                         Text("Das brauchst du").font(.title2.bold())
                         ForEach(recipe.items) { item in HStack { Text(catalog.name(item.id)); Spacer(); if journal.stock.contains(item.id) { Image(systemName: "checkmark").accessibilityLabel("Im Vorrat").foregroundStyle(Color.accentColor) }; Text(item.amount).foregroundStyle(Color.primary.opacity(0.7)) }.padding(.vertical, 4) }

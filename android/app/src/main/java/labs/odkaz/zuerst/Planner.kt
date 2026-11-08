@@ -176,6 +176,8 @@ internal fun RecipePage(catalog: Catalog, recipe: Recipe, journal: Journal, init
     var chooseDate by remember { mutableStateOf(false) }
     var notice by remember { mutableStateOf("") }
     JournalTitle(recipe.name)
+    val shareContext=LocalContext.current
+    TextButton({shareContext.startActivity(android.content.Intent.createChooser(android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT,recipe.name+" · ${recipe.minutes} Min. · 2 Portionen\nhttps://zuerst.vercel.app/?tab=recipes&recipe="+android.net.Uri.encode(recipe.id)),"Rezept teilen"))}) {Text("Rezept teilen")}
     Text("${recipe.minutes} Min. · 2 Portionen", color = MaterialTheme.colorScheme.onSurfaceVariant)
     Text(recipe.note)
     JournalCard {
